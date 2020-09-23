@@ -1,15 +1,18 @@
 ---
-title: A fast negative binomial mixed model for analyzing multi-subject single-cell
-  data
+title: "A fast negative binomial mixed model for analyzing multi-subject single-cell data"
 author: "Liang He"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
-vignette: |
-  %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+  pdf_document:
+    toc: yes
+  md_document:
+    variant: markdown_github
+vignette: >
+  %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown} 
 ---
 
 ```{r setup, include = FALSE}
