@@ -1,0 +1,110 @@
+---
+title: A fast negative binomial mixed model for analyzing multi-subject single-cell
+  data
+author: "Liang He"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+vignette: |
+  %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+The R package, *nebula*, providing fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differentail expression, and performing cell-level co-expression analysis. 
+
+## Installation
+
+### Most recent version
+```{r,eval=FALSE}
+install.packages("nebula", repos="http://R-Forge.R-project.org")
+```
+
+Because the package *nebula* uses the R package *Rfast*, the installation process may first install *Rfast*, which requires that GSL is installed or available in the environment.
+
+## Functions
+
+The current version provides the following functions.
+
+  *  `nebula`: performs association analysis given a count matrix and subject IDs.
+  *  `group_cell`: reorders cells to group them by the subject IDs.
+  
+## Basic usage
+
+We use an example data set to illustrate how to use nebula to perform an association analysis of multi-subject single-cell data. The example data set attached to the R package can be loaded as follows.  
+
+```{r,echo=TRUE}
+library(nebula)
+data(sample_data)
+```
+The example data set includes a count matrix of 6030 cells from 30 subjects for 10 genes. 
+
+```{r,echo=TRUE}
+dim(sample_data$count)
+```
+The count matrix can be a matrix object or a sparse dgCMatrix object. The elements should be integers. 
+
+```{r,echo=TRUE}
+sample_data$count[1:5,1:5]
+```
+The subject IDs of each cell are stored in ```sample_data$sid```. The subject IDs can be a character or numeric vector, the length of which equals the number of cells.
+
+```{r,echo=TRUE}
+head(sample_data$sid)
+table(sample_data$sid)
+```
+The next step is to build a design matrix for the predictors. The example data set includes a data frame consisting of three predictors stored in ```sample_data$pred```. To build the design matrix, we can use the function ```model.matrix```. 
+```{r,echo=TRUE}
+head(sample_data$pred)
+df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+head(df)
+```
+The association analysis between the gene expression and the predictor can then be conducted using the *nebula* function. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells
+```{r,echo=TRUE}
+re = nebula(sample_data$count,sample_data$sid,pred=df)
+re
+```
+The function fitted the negative binomial gamma mixed model (NBGMM) for each of the genes, and return a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The cells need to be grouped by the subjects before using as the input to the *nebula* function. If the cells are not grouped, the *group_cell* function can be used to first reorder the cells. If the cells are already grouped, the *group_cell* function will return NULL.
+```{r,eval=FALSE,echo=TRUE}
+data_g = group_cell(count=sample_data$count,id=sample_data$sid,pred=df)
+re = nebula(data_g$count,data_g$id,pred=data_g$pred)
+```
+If ```pred``` is not specified, ```nebula``` will fit the mode with an intecept term of 1. This can be used when only the overdispersions are of interest.
+
+## Specifying scaling factors
+
+The scaling factor for each cell is specified in ```nebula``` using the argument ```offset```. The argument ```offset``` has to be a positive vector of length *N*. Note that log(offset) will be the offset in the NBMM. If not specified, ```nebula``` will set ```offset``` as 1 by default, which means that each cell is treated equally. Common scaling factors include the library size of a cell or a normalizing factor adjusted using e.g., TMM.
+```{r,eval=FALSE,echo=TRUE}
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+```
+
+## Selection between NEBULA-LN and NEBULA-HL
+
+In *nebula*, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. NEBULA-LN is faster and performs particularly well when the number of cells per subject is large. However, it tends to underestimate the cell-level overdispersion more when the gene expression is very low or the number of cells per subject is small. Empirically, in our analysis of a real scRNA-seq data comprising ~700 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is <5% for most genes with counts per cell >0.5%. Such difference has little impact on testing fixed-effects predictors. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. NEBULA-HL will underestimates the subject-level overdispersion if the gene expression is very low. Filtering out low-expressed genes (e.g., counts per cell<0.5%) can be specified by ```cpc=0.005```. A user can select these methods through```method='LN'``` or ```method='HL'```. Here is an example.
+```{r,eval=TRUE,echo=TRUE}
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
+re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL')
+cbind(re_hl$overdispersion,re_ln$overdispersion)
+```
+When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument $\kappa$. NEBULA first fits the data using NEBULA-LN. If the estimated $\kappa$ for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value is 200, which can provide a good estimate of the subject-level overdispersion as low as ~0.02. This value is sufficent for well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller $\kappa$ than the default value. Specifying a larger $\kappa$ can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using $\kappa=1000$ or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (>50x faster than NEBULA-LN) and decribed below.  
+
+## Using other mixed models
+
+In addition to the NBGMM, the *nebula* package provides efficient estimation implementation for a Poisson gamma mixed model and a negative binomial lognormal mixed model (NGLMM). This can be specified through ```model="PMM"``` and ```model="NBLMM"```, respectively. The NBLMM is the same model as that adopted in the ```glmer.nb``` function in the *lme4* R package. The only difference between NBGMM and NBLMM is that NBGMM uses a gamma distribution for the random effects while the NBLMM uses a lognormal distribution. When choosing the NBLMM, ```method='HL'``` is set automatically. The PMM is the fastest among these models. Note that the Poisson mixed model (PMM) should not be used to test a cell-level predictor because it only estimates the subject-level overdispersion. Here is an example of using the PMM to fit the example data set.
+```{r,eval=TRUE,echo=TRUE}
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM')
+```
+```{r,echo=FALSE,results='asis'}
+knitr::kable(re$summary)
+```
+ 
