@@ -5,7 +5,9 @@ knitr::opts_chunk$set(
 )
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("nebula", repos="http://R-Forge.R-project.org")
+#  install.packages("devtools")
+#  library(devtools)
+#  install_github("lhe17/nebula")
 
 ## ----echo=TRUE----------------------------------------------------------------
 library(nebula)
@@ -40,7 +42,12 @@ re
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
 re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL')
+## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
+
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
+## compare the p-values for testing cell-level and subject-level predictors
+cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM')

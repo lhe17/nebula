@@ -376,10 +376,16 @@ summary {
 <li><a href="#most-recent-version">Most recent version</a></li>
 </ul></li>
 <li><a href="#functions">Functions</a></li>
-<li><a href="#basic-usage">Basic usage</a></li>
-<li><a href="#specifying-scaling-factors">Specifying scaling factors</a></li>
+<li><a href="#basic-usage">Basic usage</a><ul>
+<li><a href="#example">Example</a></li>
+</ul></li>
+<li><a href="#specifying-scaling-factors">Specifying scaling factors</a><ul>
+<li><a href="#example-1">Example</a></li>
+</ul></li>
 <li><a href="#selection-between-nebula-ln-and-nebula-hl">Selection between NEBULA-LN and NEBULA-HL</a></li>
-<li><a href="#using-other-mixed-models">Using other mixed models</a></li>
+<li><a href="#using-other-mixed-models">Using other mixed models</a><ul>
+<li><a href="#example-2">Example</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -391,8 +397,12 @@ summary {
 <h2>Installation</h2>
 <div id="most-recent-version" class="section level3">
 <h3>Most recent version</h3>
-<pre class="r"><code>install.packages(&quot;nebula&quot;, repos=&quot;http://R-Forge.R-project.org&quot;)</code></pre>
+<p>To install the lastest version from github:</p>
+<pre class="r"><code>install.packages(&quot;devtools&quot;)
+library(devtools)
+install_github(&quot;lhe17/nebula&quot;)</code></pre>
 <p>Because the package <em>nebula</em> uses the R package <em>Rfast</em>, the installation process may first install <em>Rfast</em>, which requires that GSL is installed or available in the environment.</p>
+<p>Please contact <a href="mailto:liang.he@duke.edu" class="email">liang.he@duke.edu</a> for more information.</p>
 </div>
 </div>
 <div id="functions" class="section level2">
@@ -420,7 +430,7 @@ data(sample_data)</code></pre>
 #&gt; C . 1 2 . .
 #&gt; D . . . . .
 #&gt; E . . . . .</code></pre>
-<p>The subject IDs of each cell are stored in <code>sample_data$sid</code>. The subject IDs can be a character or numeric vector, the length of which equals the number of cells.</p>
+<p>The subject IDs of each cell are stored in <code>sample_data$sid</code>. The subject IDs can be a character or numeric vector, the length of which should equal the number of cells.</p>
 <pre class="r"><code>head(sample_data$sid)
 #&gt; [1] &quot;1&quot; &quot;1&quot; &quot;1&quot; &quot;1&quot; &quot;1&quot; &quot;1&quot;
 table(sample_data$sid)
@@ -447,7 +457,7 @@ head(df)
 #&gt; 4           1 -0.1717715 0.9759191         0
 #&gt; 5           1  0.2277492 0.9759191         1
 #&gt; 6           1 -0.2635516 0.9759191         1</code></pre>
-<p>The association analysis between the gene expression and the predictor can then be conducted using the <em>nebula</em> function. The count matrix is an <em>M</em> by <em>N</em> matrix, where <em>M</em> is the number of genes, and <em>N</em> is the number of cells</p>
+<p>The association analysis between the gene expression and the predictors can then be conducted using the function <em>nebula</em>. The count matrix is an <em>M</em> by <em>N</em> matrix, where <em>M</em> is the number of genes, and <em>N</em> is the number of cells.</p>
 <pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
@@ -507,24 +517,31 @@ re
 #&gt;  [1] &quot;LN&quot;    &quot;LN&quot;    &quot;LN&quot;    &quot;LN&quot;    &quot;LN+HL&quot; &quot;LN+HL&quot; &quot;LN&quot;    &quot;LN&quot;    &quot;LN&quot;   
 #&gt; [10] &quot;LN&quot;</code></pre>
 <p>The function fitted the negative binomial gamma mixed model (NBGMM) for each of the genes, and return a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions (<span class="math inline">\(\sigma^2\)</span> and <span class="math inline">\(\phi^{-1}\)</span>). The cells need to be grouped by the subjects before using as the input to the <em>nebula</em> function. If the cells are not grouped, the <em>group_cell</em> function can be used to first reorder the cells. If the cells are already grouped, the <em>group_cell</em> function will return NULL.</p>
+<div id="example" class="section level3">
+<h3>Example</h3>
 <pre class="r"><code>data_g = group_cell(count=sample_data$count,id=sample_data$sid,pred=df)
 re = nebula(data_g$count,data_g$id,pred=data_g$pred)</code></pre>
-<p>If <code>pred</code> is not specified, <code>nebula</code> will fit the mode with an intecept term of 1. This can be used when only the overdispersions are of interest.</p>
+<p>If <code>pred</code> is not specified, <code>nebula</code> will fit the model with an intecept term by default. This can be used when only the overdispersions are of interest.</p>
+</div>
 </div>
 <div id="specifying-scaling-factors" class="section level2">
 <h2>Specifying scaling factors</h2>
 <p>The scaling factor for each cell is specified in <code>nebula</code> using the argument <code>offset</code>. The argument <code>offset</code> has to be a positive vector of length <em>N</em>. Note that log(offset) will be the offset in the NBMM. If not specified, <code>nebula</code> will set <code>offset</code> as 1 by default, which means that each cell is treated equally. Common scaling factors include the library size of a cell or a normalizing factor adjusted using e.g., TMM.</p>
+<div id="example-1" class="section level3">
+<h3>Example</h3>
 <pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)</code></pre>
+</div>
 </div>
 <div id="selection-between-nebula-ln-and-nebula-hl" class="section level2">
 <h2>Selection between NEBULA-LN and NEBULA-HL</h2>
-<p>In <em>nebula</em>, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. NEBULA-LN is faster and performs particularly well when the number of cells per subject is large. However, it tends to underestimate the cell-level overdispersion more when the gene expression is very low or the number of cells per subject is small. Empirically, in our analysis of a real scRNA-seq data comprising ~700 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is &lt;5% for most genes with counts per cell &gt;0.5%. Such difference has little impact on testing fixed-effects predictors. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. NEBULA-HL will underestimates the subject-level overdispersion if the gene expression is very low. Filtering out low-expressed genes (e.g., counts per cell&lt;0.5%) can be specified by <code>cpc=0.005</code>. A user can select these methods through<code>method=&#39;LN&#39;</code> or <code>method=&#39;HL&#39;</code>. Here is an example.</p>
+<p>In <em>nebula</em>, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. NEBULA-LN is faster and performs particularly well when the number of cells per subject is large. In the following analysis of the example data comprising ~200 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is ~5% for most genes.</p>
 <pre class="r"><code>re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
 re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;HL&#39;)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
+## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt;       Subject      Cell    Subject      Cell
 #&gt; 1  0.08432303 0.9284704 0.08125256 0.8840821
@@ -537,11 +554,28 @@ cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt; 8  0.13797553 0.7991952 0.13571262 0.7549629
 #&gt; 9  0.05879485 0.8568851 0.05541398 0.8139652
 #&gt; 10 0.09782377 0.9940205 0.09496649 0.9410035</code></pre>
+<p>Such difference has little impact on testing fixed-effects predictors.</p>
+<pre class="r"><code>## compare the p-values for testing cell-level and subject-level predictors
+cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
+#&gt;         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
+#&gt; 1  0.6373036 0.1346295   0.4950795 0.6354810 0.1291514   0.4919443
+#&gt; 2  0.9444825 0.3977108   0.7626827 0.9436079 0.3896818   0.7627706
+#&gt; 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
+#&gt; 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
+#&gt; 5  0.7596198 0.6872259   0.6544751 0.7594613 0.6872997   0.6538444
+#&gt; 6  0.7134192 0.8656692   0.6576835 0.7102234 0.8652074   0.6552629
+#&gt; 7  0.9216994 0.2230951   0.8977251 0.9225364 0.2151043   0.8987718
+#&gt; 8  0.7017084 0.4443592   0.3955344 0.7009654 0.4409832   0.3949916
+#&gt; 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
+#&gt; 10 0.4199830 0.7510846   0.7308111 0.4183421 0.7476010   0.7293434</code></pre>
+<p>The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the cell counts per subject becomes lower or the gene expression is more sparse. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. NEBULA-HL will underestimate the subject-level overdispersion if the gene expression is very low. Filtering out low-expressed genes (e.g., counts per cell&lt;0.5%) can be specified by <code>cpc=0.005</code>. A user can select these methods through<code>method=&#39;LN&#39;</code> or <code>method=&#39;HL&#39;</code>.</p>
 <p>When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument <span class="math inline">\(\kappa\)</span>. NEBULA first fits the data using NEBULA-LN. If the estimated <span class="math inline">\(\kappa\)</span> for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value is 200, which can provide a good estimate of the subject-level overdispersion as low as ~0.02. This value is sufficent for well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller <span class="math inline">\(\kappa\)</span> than the default value. Specifying a larger <span class="math inline">\(\kappa\)</span> can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using <span class="math inline">\(\kappa=1000\)</span> or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (&gt;50x faster than NEBULA-LN) and decribed below.</p>
 </div>
 <div id="using-other-mixed-models" class="section level2">
 <h2>Using other mixed models</h2>
 <p>In addition to the NBGMM, the <em>nebula</em> package provides efficient estimation implementation for a Poisson gamma mixed model and a negative binomial lognormal mixed model (NGLMM). This can be specified through <code>model=&quot;PMM&quot;</code> and <code>model=&quot;NBLMM&quot;</code>, respectively. The NBLMM is the same model as that adopted in the <code>glmer.nb</code> function in the <em>lme4</em> R package. The only difference between NBGMM and NBLMM is that NBGMM uses a gamma distribution for the random effects while the NBLMM uses a lognormal distribution. When choosing the NBLMM, <code>method=&#39;HL&#39;</code> is set automatically. The PMM is the fastest among these models. Note that the Poisson mixed model (PMM) should not be used to test a cell-level predictor because it only estimates the subject-level overdispersion. Here is an example of using the PMM to fit the example data set.</p>
+<div id="example-2" class="section level3">
+<h3>Example</h3>
 <pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;PMM&#39;)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.</code></pre>
@@ -727,6 +761,7 @@ cbind(re_hl$overdispersion,re_ln$overdispersion)
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 
 
