@@ -46,7 +46,7 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
-## compare the p-values for testing cell-level and subject-level predictors
+## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
