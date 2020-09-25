@@ -3,8 +3,6 @@ title: "A fast negative binomial mixed model for analyzing multi-subject single-
 author: "Liang He"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
   md_document:
@@ -39,6 +37,7 @@ install_github("lhe17/nebula")
 
 Because the package *nebula* uses the R package *Rfast*, the installation process may first install *Rfast*, which requires that GSL is installed or available in the environment.
 
+The installation has been tested on R-3.6 and R-3.5.
 Please contact liang.he@duke.edu for more information.
 
 ## Functions

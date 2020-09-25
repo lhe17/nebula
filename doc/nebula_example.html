@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2020-09-23" />
+<meta name="date" content="2020-09-24" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">A fast negative binomial mixed model for analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2020-09-23</h4>
+<h4 class="date">2020-09-24</h4>
 
 </div>
 
@@ -391,7 +391,7 @@ summary {
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>The R package, <em>nebula</em>, providing fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package <em>nebula</em> accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differentail expression, and performing cell-level co-expression analysis.</p>
+<p>The R package, <em>nebula</em>, provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package <em>nebula</em> accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differentail expression, and performing cell-level co-expression analysis.</p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -402,7 +402,7 @@ summary {
 library(devtools)
 install_github(&quot;lhe17/nebula&quot;)</code></pre>
 <p>Because the package <em>nebula</em> uses the R package <em>Rfast</em>, the installation process may first install <em>Rfast</em>, which requires that GSL is installed or available in the environment.</p>
-<p>Please contact <a href="mailto:liang.he@duke.edu" class="email">liang.he@duke.edu</a> for more information.</p>
+<p>The installation has been tested on R-3.6 and R-3.5. Please contact <a href="mailto:liang.he@duke.edu" class="email">liang.he@duke.edu</a> for more information.</p>
 </div>
 </div>
 <div id="functions" class="section level2">
@@ -534,7 +534,7 @@ re = nebula(data_g$count,data_g$id,pred=data_g$pred)</code></pre>
 </div>
 <div id="selection-between-nebula-ln-and-nebula-hl" class="section level2">
 <h2>Selection between NEBULA-LN and NEBULA-HL</h2>
-<p>In <em>nebula</em>, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. NEBULA-LN is faster and performs particularly well when the number of cells per subject is large. In the following analysis of the example data comprising ~200 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is ~5% for most genes.</p>
+<p>In <em>nebula</em>, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. A user can select these methods through<code>method=&#39;LN&#39;</code> or <code>method=&#39;HL&#39;</code>. NEBULA-LN is faster and performs particularly well when the number of cells per subject is large. In the following analysis of the example data comprising ~200 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is ~5% for most genes.</p>
 <pre class="r"><code>re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
@@ -555,7 +555,7 @@ cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt; 9  0.05879485 0.8568851 0.05541398 0.8139652
 #&gt; 10 0.09782377 0.9940205 0.09496649 0.9410035</code></pre>
 <p>Such difference has little impact on testing fixed-effects predictors.</p>
-<pre class="r"><code>## compare the p-values for testing cell-level and subject-level predictors
+<pre class="r"><code>## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #&gt;         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
 #&gt; 1  0.6373036 0.1346295   0.4950795 0.6354810 0.1291514   0.4919443
@@ -568,8 +568,8 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #&gt; 8  0.7017084 0.4443592   0.3955344 0.7009654 0.4409832   0.3949916
 #&gt; 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
 #&gt; 10 0.4199830 0.7510846   0.7308111 0.4183421 0.7476010   0.7293434</code></pre>
-<p>The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the cell counts per subject becomes lower or the gene expression is more sparse. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. NEBULA-HL will underestimate the subject-level overdispersion if the gene expression is very low. Filtering out low-expressed genes (e.g., counts per cell&lt;0.5%) can be specified by <code>cpc=0.005</code>. A user can select these methods through<code>method=&#39;LN&#39;</code> or <code>method=&#39;HL&#39;</code>.</p>
-<p>When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument <span class="math inline">\(\kappa\)</span>. NEBULA first fits the data using NEBULA-LN. If the estimated <span class="math inline">\(\kappa\)</span> for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value is 200, which can provide a good estimate of the subject-level overdispersion as low as ~0.02. This value is sufficent for well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller <span class="math inline">\(\kappa\)</span> than the default value. Specifying a larger <span class="math inline">\(\kappa\)</span> can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using <span class="math inline">\(\kappa=1000\)</span> or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (&gt;50x faster than NEBULA-LN) and decribed below.</p>
+<p>The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the cell count per subject becomes lower or the gene expression is more sparse. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. NEBULA-HL will underestimate the subject-level overdispersion if the gene expression is very low. Filtering out low-expressed genes (e.g., counts per cell&lt;0.5%) can be specified by <code>cpc=0.005</code>.</p>
+<p>When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument <span class="math inline">\(\kappa\)</span>. NEBULA first fits the data using NEBULA-LN. If the estimated <span class="math inline">\(\kappa\)</span> for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value of <span class="math inline">\(\kappa\)</span> is 200, which can provide a good estimate of the subject-level overdispersion as low as ~0.02. This value is sufficent for well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller <span class="math inline">\(\kappa\)</span> than the default value. Specifying a larger <span class="math inline">\(\kappa\)</span> can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using <span class="math inline">\(\kappa=1000\)</span> or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (&gt;50x faster than NEBULA-LN) and decribed below.</p>
 </div>
 <div id="using-other-mixed-models" class="section level2">
 <h2>Using other mixed models</h2>
