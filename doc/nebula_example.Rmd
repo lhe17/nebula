@@ -24,6 +24,8 @@ knitr::opts_chunk$set(
 
 The R package, *nebula*, provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differentail expression, and performing cell-level co-expression analysis. 
 
+More details can be found in the manuscript "NEBULA: a fast negative binomial mixed model for differential expression and co-expression analyses of large-scale multi-subject single-cell data" (https://doi.org/10.1101/2020.09.24.311662).
+
 ## Installation
 
 ### Most recent version
