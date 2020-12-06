@@ -29,6 +29,12 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
+To install the lastest version from R-forge:
+
+``` r
+install.packages("nebula", repos="http://R-Forge.R-project.org")
+```
+
 Because the package *nebula* uses the R package *Rfast*, the
 installation process may first install *Rfast*, which requires that GSL
 is installed or available in the environment.
@@ -134,7 +140,7 @@ re
 #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
 #> 1          -1.902455 -0.016755225 -0.097867225     0.047278197     0.06335820
 #> 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
-#> 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
+#> 3          -2.033211  0.017954707  0.002398446    -0.048296661     0.08695028
 #> 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
 #> 5          -1.981546  0.011486801 -0.025051853     0.032882833     0.06280883
 #> 6          -1.951561  0.013464590 -0.012557319    -0.031646274     0.07519685
@@ -145,10 +151,10 @@ re
 #>         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
 #> 1  0.03494975 0.06413521   0.04864366 4.362881e-198 0.6354810 0.1291514
 #> 2  0.03744907 0.06221023   0.05222322 2.052806e-240 0.9436079 0.3896818
-#> 3  0.03654592 0.09186803   0.05132265 6.275233e-121 0.6271261 0.9792875
+#> 3  0.03654592 0.09186803   0.05132265 6.275231e-121 0.6271261 0.9792875
 #> 4  0.03662965 0.05593511   0.05128078 5.822961e-291 0.8777381 0.6213846
-#> 5  0.03709429 0.06189072   0.05184865 1.860076e-218 0.7594613 0.6872997
-#> 6  0.03583152 0.07356394   0.05011851 1.694944e-148 0.7102234 0.8652074
+#> 5  0.03709429 0.06189072   0.05184865 1.860074e-218 0.7594613 0.6872997
+#> 6  0.03583152 0.07356394   0.05011851 1.694943e-148 0.7102234 0.8652074
 #> 7  0.03590846 0.06034913   0.05044028 1.871848e-222 0.9225364 0.2151043
 #> 8  0.03512025 0.07911592   0.04928082 1.959009e-140 0.7009654 0.4409832
 #> 9  0.03773196 0.05735863   0.05269998 9.307378e-286 0.6489358 0.4473406
@@ -182,18 +188,19 @@ re
 #>  [1] 1 1 1 1 1 1 1 1 1 1
 #> 
 #> $algorithm
-#>  [1] "LN"    "LN"    "LN"    "LN"    "LN+HL" "LN+HL" "LN"    "LN"    "LN"   
-#> [10] "LN"
+#>  [1] "NBGMM (LN)"    "NBGMM (LN)"    "NBGMM (LN)"    "NBGMM (LN)"   
+#>  [5] "NBGMM (LN+HL)" "NBGMM (LN+HL)" "NBGMM (LN)"    "NBGMM (LN)"   
+#>  [9] "NBGMM (LN)"    "NBGMM (LN)"
 ```
 
-The function fitted the negative binomial gamma mixed model (NBGMM) for
-each of the genes, and return a list of summary statistics including the
-fold change, p-values, and both subject-level and cell-level
-overdispersions (*σ*<sup>2</sup> and *ϕ*<sup> − 1</sup>). The cells need
-to be grouped by the subjects before using as the input to the *nebula*
-function. If the cells are not grouped, the *group\_cell* function can
-be used to first reorder the cells. If the cells are already grouped,
-the *group\_cell* function will return NULL.
+The function by default fitted the negative binomial gamma mixed model
+(NBGMM) for each of the genes, and return a list of summary statistics
+including the fold change, p-values, and both subject-level and
+cell-level overdispersions (*σ*<sup>2</sup> and *ϕ*<sup> − 1</sup>). The
+cells need to be grouped by the subjects before using as the input to
+the *nebula* function. If the cells are not grouped, the *group\_cell*
+function can be used to first reorder the cells. If the cells are
+already grouped, the *group\_cell* function will return NULL.
 
 ### Example
 
@@ -228,11 +235,12 @@ Selection between NEBULA-LN and NEBULA-HL
 In *nebula*, a user can choose one of the two algorithms to fit an
 NBGMM. NEBULA-LN uses an approximated likelihood based on the law of
 large numbers, and NEBULA-HL uses an h-likelihood. A user can select
-these methods through`method='LN'` or `method='HL'`. NEBULA-LN is faster
-and performs particularly well when the number of cells per subject is
-large. In the following analysis of the example data comprising \~200
-cells per subject, the difference of the estimated cell-level
-overdispersions between NEBULA-LN and NEBULA-HL is \~5% for most genes.
+these methods through `method='LN'` or `method='HL'`. NEBULA-LN is
+faster and performs particularly well when the number of cells per
+subject is large. In the following analysis of the example data
+comprising \~200 cells per subject, the difference of the estimated
+cell-level overdispersions between NEBULA-LN and NEBULA-HL is \~5% for
+most genes.
 
 ``` r
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
@@ -244,15 +252,15 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432304 0.9284704 0.08125256 0.8840821
-#> 2  0.07455454 0.9726513 0.07102681 0.9255032
+#> 1  0.08432303 0.9284704 0.08125256 0.8840821
+#> 2  0.07455458 0.9726516 0.07102681 0.9255032
 #> 3  0.17403265 0.9817571 0.17159404 0.9266395
-#> 4  0.05352150 0.8516686 0.05026165 0.8124118
-#> 5  0.07480036 1.3254378 0.07507489 1.2674146
-#> 6  0.12372437 1.1653120 0.12398378 1.1096065
-#> 7  0.07724763 0.9578175 0.07360445 0.9112956
-#> 8  0.13797543 0.7991951 0.13571262 0.7549629
-#> 9  0.05879494 0.8568852 0.05541398 0.8139652
+#> 4  0.05352152 0.8516679 0.05026165 0.8124118
+#> 5  0.07480033 1.3254377 0.07507489 1.2674146
+#> 6  0.12372426 1.1653120 0.12398378 1.1096065
+#> 7  0.07724765 0.9578174 0.07360445 0.9112956
+#> 8  0.13797553 0.7991952 0.13571262 0.7549629
+#> 9  0.05879485 0.8568851 0.05541398 0.8139652
 #> 10 0.09782377 0.9940205 0.09496649 0.9410035
 ```
 
@@ -263,14 +271,14 @@ Such difference has little impact on testing fixed-effects predictors.
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
 #> 1  0.6373036 0.1346295   0.4950795 0.6354810 0.1291514   0.4919443
-#> 2  0.9444825 0.3977107   0.7626827 0.9436079 0.3896818   0.7627706
+#> 2  0.9444825 0.3977108   0.7626827 0.9436079 0.3896818   0.7627706
 #> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
 #> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
-#> 5  0.7596198 0.6872260   0.6544751 0.7594613 0.6872997   0.6538444
-#> 6  0.7134192 0.8656693   0.6576835 0.7102234 0.8652074   0.6552629
+#> 5  0.7596198 0.6872259   0.6544751 0.7594613 0.6872997   0.6538444
+#> 6  0.7134192 0.8656692   0.6576835 0.7102234 0.8652074   0.6552629
 #> 7  0.9216994 0.2230951   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017085 0.4443591   0.3955344 0.7009654 0.4409832   0.3949916
-#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
+#> 8  0.7017084 0.4443592   0.3955344 0.7009654 0.4409832   0.3949916
+#> 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
 #> 10 0.4199830 0.7510846   0.7308111 0.4183421 0.7476010   0.7293434
 ```
 
@@ -278,9 +286,7 @@ The bias of NEBULA-LN in estimating the cell-level overdispersion gets
 larger when the cell count per subject becomes lower or the gene
 expression is more sparse. In contrast, NEBULA-HL is slower, but its
 accuracy of estimating the overdispersions depends less on these
-factors. NEBULA-HL will underestimate the subject-level overdispersion
-if the gene expression is very low. Filtering out low-expressed genes
-(e.g., counts per cell\<0.5%) can be specified by `cpc=0.005`.
+factors.
 
 When NEBULA-LN is used, the user can opt for better accuracy of
 estimating a smaller subject-level overdispersion through the argument
@@ -302,6 +308,20 @@ testing a subject-level predictor. Another option to testing a
 subject-level predictor is to use a Poisson gamma mixed model, which is
 extremely fast (\>50x faster than NEBULA-LN) and decribed below.
 
+Filtering low-expressed genes
+-----------------------------
+
+NEBULA-HL automatically uses a higher-order Laplace approximation for
+low-expressed genes of which the average count per subject is less than
+3. The higher-order Laplace approximation substantailly increases the
+accuracy for estimating the subject-level overdispersion for
+low-expressed genes and controls the false positive rate. Nevertheless,
+we recommend removing genes with very low expression from the analysis
+because there is little statistical power for these genes. Filtering out
+low-expressed genes can be specified by `cpc=0.005` (i.e., counts per
+cell\<0.5%). The argument `cpc` is defined by the ratio between the
+total count of the gene and the number of cells.
+
 Using other mixed models
 ------------------------
 
@@ -310,13 +330,14 @@ estimation implementation for a Poisson gamma mixed model and a negative
 binomial lognormal mixed model (NGLMM). This can be specified through
 `model="PMM"` and `model="NBLMM"`, respectively. The NBLMM is the same
 model as that adopted in the `glmer.nb` function in the *lme4* R
-package. The only difference between NBGMM and NBLMM is that NBGMM uses
-a gamma distribution for the random effects while the NBLMM uses a
-lognormal distribution. When choosing the NBLMM, `method='HL'` is set
-automatically. The PMM is the fastest among these models. Note that the
-Poisson mixed model (PMM) should not be used to test a cell-level
-predictor because it only estimates the subject-level overdispersion.
-Here is an example of using the PMM to fit the example data set.
+package, but is computationally much more efficient by setting
+`method='LN'`. The only difference between NBGMM and NBLMM is that NBGMM
+uses a gamma distribution for the random effects while the NBLMM uses a
+lognormal distribution. The PMM is the fastest among these models. Note
+that the Poisson mixed model (PMM) should not be used to test a
+cell-level predictor because it only estimates the subject-level
+overdispersion. Here is an example of using the PMM to fit the example
+data set.
 
 ### Example
 
@@ -331,10 +352,10 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 |           -1.903571|  -0.0155809|  -0.0976660|         0.0511060|        0.0661297|  0.0325420|  0.0651904|      0.0454149|               0|  0.6359142|  0.1362700|     0.4262222|         1| A    |
 |           -2.047864|  -0.0032670|  -0.0536887|        -0.0189269|        0.0644332|  0.0351088|  0.0631912|      0.0491308|               0|  0.9266904|  0.3981703|     0.7853239|         2| B    |
 |           -2.032645|   0.0179777|   0.0009387|        -0.0505390|        0.0908196|  0.0341618|  0.0927258|      0.0478477|               0|  0.6028248|  0.9919678|     0.4551611|         3| C    |
-|           -2.009746|  -0.0054963|  -0.0278602|         0.0782074|        0.0573209|  0.0346807|  0.0571261|      0.0485713|               0|  0.8754792|  0.6276888|     0.2549156|         4| D    |
+|           -2.009746|  -0.0054963|  -0.0278602|         0.0782074|        0.0573209|  0.0346807|  0.0571261|      0.0485713|               0|  0.8754792|  0.6276889|     0.2549156|         4| D    |
 |           -1.980528|   0.0106338|  -0.0248791|         0.0312190|        0.0644287|  0.0339500|  0.0618116|      0.0474898|               0|  0.7567865|  0.6889656|     0.6420644|         5| E    |
 |           -1.950451|   0.0160341|  -0.0134775|        -0.0345244|        0.0778198|  0.0330110|  0.0734396|      0.0459884|               0|  0.6310363|  0.8551928|     0.5955505|         6| F    |
 |           -1.970271|  -0.0026753|   0.0750060|        -0.0063677|        0.0645989|  0.0338097|  0.0611736|      0.0472832|               0|  0.9376369|  0.2227329|     0.9241391|         7| G    |
-|           -1.964311|   0.0141532|  -0.0610984|        -0.0578672|        0.0809943|  0.0332801|  0.0796531|      0.0464402|               0|  0.6741201|  0.4455910|     0.3782927|         8| H    |
+|           -1.964311|   0.0141532|  -0.0610984|        -0.0578672|        0.0809943|  0.0332801|  0.0796531|      0.0464402|               0|  0.6741202|  0.4455910|     0.3782927|         8| H    |
 |           -2.074031|  -0.0178190|  -0.0436094|         0.0259745|        0.0597947|  0.0358136|  0.0584407|      0.0500542|               0|  0.6227459|  0.4580494|     0.7136813|         9| I    |
 |           -2.046055|   0.0307026|   0.0227238|        -0.0246112|        0.0714158|  0.0350860|  0.0698359|      0.0489158|               0|  0.3869068|  0.7462578|     0.7220276|        10| J    |
