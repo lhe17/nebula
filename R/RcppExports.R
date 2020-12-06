@@ -45,12 +45,12 @@ ptmg_ll_der_hes_eigen <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c
     .Call('_nebula_ptmg_ll_der_hes_eigen', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c)
 }
 
-opt_pml <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps) {
-    .Call('_nebula_opt_pml', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps)
+opt_pml <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps, ord) {
+    .Call('_nebula_opt_pml', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps, ord)
 }
 
-opt_pml_nbm <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps) {
-    .Call('_nebula_opt_pml_nbm', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps)
+opt_pml_nbm <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps, ord) {
+    .Call('_nebula_opt_pml_nbm', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c, reml, eps, ord)
 }
 
 pml_ll_der_eigen <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, logw_c, sigma_c) {

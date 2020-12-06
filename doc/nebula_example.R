@@ -9,6 +9,9 @@ knitr::opts_chunk$set(
 #  library(devtools)
 #  install_github("lhe17/nebula")
 
+## ----eval=FALSE---------------------------------------------------------------
+#  install.packages("nebula", repos="http://R-Forge.R-project.org")
+
 ## ----echo=TRUE----------------------------------------------------------------
 library(nebula)
 data(sample_data)
