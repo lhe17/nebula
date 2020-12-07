@@ -192,12 +192,22 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
             }
           }
         }else{
-          varsig = nlminb(para[1], pql_nbm_gamma_ll, gamma = para[2],betas = betae, reml = reml, eps = eps,ord=1,
+          if (gni < cutoff_cell) {
+            re_t = bobyqa(para, pql_nbm_ll, reml = reml,
+                          eps = eps, ord=1, betas = betae, posindy = posv$posindy,
+                          X = pred, offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
+                          ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
+                          nind = nind, lower = min, upper = max)
+            vare = re_t$par[1:2]
+            fit = 4
+          }else{
+            varsig = nlminb(para[1], pql_nbm_gamma_ll, gamma = para[2],betas = betae, reml = reml, eps = eps,ord=1,
                           posindy = posv$posindy, X = pred, offset = offset,Y = posv$Y, n_one = posv$n_onetwo, ytwo = posv$ytwo,
                           fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                           nind = nind, lower = min[1], upper = max[1])
-          vare[1] = varsig$par[1]
-          fit = 6
+            vare[1] = varsig$par[1]
+            fit = 6
+          }
         }
       }else {
         
