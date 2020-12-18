@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2020-12-05" />
+<meta name="date" content="2020-12-17" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">A fast negative binomial mixed model for analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2020-12-05</h4>
+<h4 class="date">2020-12-17</h4>
 
 </div>
 
@@ -443,7 +443,7 @@ table(sample_data$sid)
 #&gt; 187 230 185 197 163 216 211 195 200 239 196 223 198 202 213 210 199 214 237 200 
 #&gt;  28  29   3  30   4   5   6   7   8   9 
 #&gt; 205 183 222 191 205 225 211 197 215 207</code></pre>
-<p>The next step is to build a design matrix for the predictors. The example data set includes a data frame consisting of three predictors stored in <code>sample_data$pred</code>. To build the design matrix, we can use the function <code>model.matrix</code>.</p>
+<p>The next step is to build a design matrix for the predictors. The example data set includes a data frame consisting of three predictors stored in <code>sample_data$pred</code>. To build the design matrix, we can use the function <code>model.matrix</code>. The intercept term must be included in the design matrix.</p>
 <pre class="r"><code>head(sample_data$pred)
 #&gt;           X1        X2      cc
 #&gt; 1  0.6155094 0.9759191 control
@@ -470,7 +470,7 @@ re
 #&gt;    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
 #&gt; 1          -1.902455 -0.016755225 -0.097867225     0.047278197     0.06335820
 #&gt; 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
-#&gt; 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
+#&gt; 3          -2.033211  0.017954707  0.002398446    -0.048296661     0.08695028
 #&gt; 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
 #&gt; 5          -1.981546  0.011486801 -0.025051853     0.032882833     0.06280883
 #&gt; 6          -1.951561  0.013464590 -0.012557319    -0.031646274     0.07519685
@@ -479,16 +479,16 @@ re
 #&gt; 9          -2.072699 -0.017372176 -0.043828288     0.026624998     0.05737632
 #&gt; 10         -2.045646  0.030742876  0.022260806    -0.025516032     0.06842808
 #&gt;         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
-#&gt; 1  0.03494975 0.06413521   0.04864366 4.362881e-198 0.6354810 0.1291514
-#&gt; 2  0.03744907 0.06221023   0.05222322 2.052806e-240 0.9436079 0.3896818
-#&gt; 3  0.03654592 0.09186803   0.05132265 6.275233e-121 0.6271261 0.9792875
-#&gt; 4  0.03662965 0.05593511   0.05128078 5.822961e-291 0.8777381 0.6213846
-#&gt; 5  0.03709429 0.06189072   0.05184865 1.860076e-218 0.7594613 0.6872997
-#&gt; 6  0.03583152 0.07356394   0.05011851 1.694944e-148 0.7102234 0.8652074
-#&gt; 7  0.03590846 0.06034913   0.05044028 1.871848e-222 0.9225364 0.2151043
-#&gt; 8  0.03512025 0.07911592   0.04928082 1.959009e-140 0.7009654 0.4409832
-#&gt; 9  0.03773196 0.05735863   0.05269998 9.307378e-286 0.6489358 0.4473406
-#&gt; 10 0.03756047 0.06878990   0.05214337 2.296650e-196 0.4183421 0.7476010
+#&gt; 1  0.03534659 0.06449424   0.06879634 4.362881e-198 0.6354810 0.1291514
+#&gt; 2  0.03787429 0.06255848   0.07385888 2.052806e-240 0.9436079 0.3896818
+#&gt; 3  0.03696089 0.09238230   0.07258521 6.275231e-121 0.6271261 0.9792875
+#&gt; 4  0.03704556 0.05624824   0.07252600 5.822961e-291 0.8777381 0.6213846
+#&gt; 5  0.03751548 0.06223718   0.07332914 1.860074e-218 0.7594613 0.6872997
+#&gt; 6  0.03623837 0.07397575   0.07088221 1.694943e-148 0.7102234 0.8652074
+#&gt; 7  0.03631618 0.06068697   0.07133729 1.871848e-222 0.9225364 0.2151043
+#&gt; 8  0.03551902 0.07955880   0.06969747 1.959009e-140 0.7009654 0.4409832
+#&gt; 9  0.03816039 0.05767972   0.07453316 9.307378e-286 0.6489358 0.4473406
+#&gt; 10 0.03798696 0.06917499   0.07374595 2.296650e-196 0.4183421 0.7476010
 #&gt;    p_cccontrol gene_id gene
 #&gt; 1    0.4919443       1    A
 #&gt; 2    0.7627706       2    B
@@ -549,29 +549,29 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt;       Subject      Cell    Subject      Cell
-#&gt; 1  0.08432304 0.9284704 0.08125256 0.8840821
-#&gt; 2  0.07455454 0.9726513 0.07102681 0.9255032
+#&gt; 1  0.08432303 0.9284704 0.08125256 0.8840821
+#&gt; 2  0.07455458 0.9726516 0.07102681 0.9255032
 #&gt; 3  0.17403265 0.9817571 0.17159404 0.9266395
-#&gt; 4  0.05352150 0.8516686 0.05026165 0.8124118
-#&gt; 5  0.07480036 1.3254378 0.07507489 1.2674146
-#&gt; 6  0.12372437 1.1653120 0.12398378 1.1096065
-#&gt; 7  0.07724763 0.9578175 0.07360445 0.9112956
-#&gt; 8  0.13797543 0.7991951 0.13571262 0.7549629
-#&gt; 9  0.05879494 0.8568852 0.05541398 0.8139652
+#&gt; 4  0.05352152 0.8516679 0.05026165 0.8124118
+#&gt; 5  0.07480033 1.3254377 0.07507489 1.2674146
+#&gt; 6  0.12372426 1.1653120 0.12398378 1.1096065
+#&gt; 7  0.07724765 0.9578174 0.07360445 0.9112956
+#&gt; 8  0.13797553 0.7991952 0.13571262 0.7549629
+#&gt; 9  0.05879485 0.8568851 0.05541398 0.8139652
 #&gt; 10 0.09782377 0.9940205 0.09496649 0.9410035</code></pre>
 <p>Such difference has little impact on testing fixed-effects predictors.</p>
 <pre class="r"><code>## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #&gt;         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
 #&gt; 1  0.6373036 0.1346295   0.4950795 0.6354810 0.1291514   0.4919443
-#&gt; 2  0.9444825 0.3977107   0.7626827 0.9436079 0.3896818   0.7627706
+#&gt; 2  0.9444825 0.3977108   0.7626827 0.9436079 0.3896818   0.7627706
 #&gt; 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
 #&gt; 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
-#&gt; 5  0.7596198 0.6872260   0.6544751 0.7594613 0.6872997   0.6538444
-#&gt; 6  0.7134192 0.8656693   0.6576835 0.7102234 0.8652074   0.6552629
+#&gt; 5  0.7596198 0.6872259   0.6544751 0.7594613 0.6872997   0.6538444
+#&gt; 6  0.7134192 0.8656692   0.6576835 0.7102234 0.8652074   0.6552629
 #&gt; 7  0.9216994 0.2230951   0.8977251 0.9225364 0.2151043   0.8987718
-#&gt; 8  0.7017085 0.4443591   0.3955344 0.7009654 0.4409832   0.3949916
-#&gt; 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
+#&gt; 8  0.7017084 0.4443592   0.3955344 0.7009654 0.4409832   0.3949916
+#&gt; 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
 #&gt; 10 0.4199830 0.7510846   0.7308111 0.4183421 0.7476010   0.7293434</code></pre>
 <p>The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the cell count per subject becomes lower or the gene expression is more sparse. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors.</p>
 <p>When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument <span class="math inline">\(\kappa\)</span>. NEBULA first fits the data using NEBULA-LN. If the estimated <span class="math inline">\(\kappa\)</span> for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value of <span class="math inline">\(\kappa\)</span> is 200, which can provide a good estimate of the subject-level overdispersion as low as ~0.02. This value is sufficent for well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller <span class="math inline">\(\kappa\)</span> than the default value. Specifying a larger <span class="math inline">\(\kappa\)</span> can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using <span class="math inline">\(\kappa=1000\)</span> or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (&gt;50x faster than NEBULA-LN) and decribed below.</p>
@@ -614,9 +614,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0976660</td>
 <td align="right">0.0511060</td>
 <td align="right">0.0661297</td>
-<td align="right">0.0325420</td>
-<td align="right">0.0651904</td>
-<td align="right">0.0454149</td>
+<td align="right">0.0329115</td>
+<td align="right">0.0655553</td>
+<td align="right">0.0642299</td>
 <td align="right">0</td>
 <td align="right">0.6359142</td>
 <td align="right">0.1362700</td>
@@ -630,9 +630,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0536887</td>
 <td align="right">-0.0189269</td>
 <td align="right">0.0644332</td>
-<td align="right">0.0351088</td>
-<td align="right">0.0631912</td>
-<td align="right">0.0491308</td>
+<td align="right">0.0355074</td>
+<td align="right">0.0635450</td>
+<td align="right">0.0694853</td>
 <td align="right">0</td>
 <td align="right">0.9266904</td>
 <td align="right">0.3981703</td>
@@ -646,9 +646,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">0.0009387</td>
 <td align="right">-0.0505390</td>
 <td align="right">0.0908196</td>
-<td align="right">0.0341618</td>
-<td align="right">0.0927258</td>
-<td align="right">0.0478477</td>
+<td align="right">0.0345496</td>
+<td align="right">0.0932449</td>
+<td align="right">0.0676706</td>
 <td align="right">0</td>
 <td align="right">0.6028248</td>
 <td align="right">0.9919678</td>
@@ -662,12 +662,12 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0278602</td>
 <td align="right">0.0782074</td>
 <td align="right">0.0573209</td>
-<td align="right">0.0346807</td>
-<td align="right">0.0571261</td>
-<td align="right">0.0485713</td>
+<td align="right">0.0350745</td>
+<td align="right">0.0574459</td>
+<td align="right">0.0686939</td>
 <td align="right">0</td>
 <td align="right">0.8754792</td>
-<td align="right">0.6276888</td>
+<td align="right">0.6276889</td>
 <td align="right">0.2549156</td>
 <td align="right">4</td>
 <td align="left">D</td>
@@ -678,9 +678,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0248791</td>
 <td align="right">0.0312190</td>
 <td align="right">0.0644287</td>
-<td align="right">0.0339500</td>
-<td align="right">0.0618116</td>
-<td align="right">0.0474898</td>
+<td align="right">0.0343355</td>
+<td align="right">0.0621576</td>
+<td align="right">0.0671645</td>
 <td align="right">0</td>
 <td align="right">0.7567865</td>
 <td align="right">0.6889656</td>
@@ -694,9 +694,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0134775</td>
 <td align="right">-0.0345244</td>
 <td align="right">0.0778198</td>
-<td align="right">0.0330110</td>
-<td align="right">0.0734396</td>
-<td align="right">0.0459884</td>
+<td align="right">0.0333858</td>
+<td align="right">0.0738508</td>
+<td align="right">0.0650410</td>
 <td align="right">0</td>
 <td align="right">0.6310363</td>
 <td align="right">0.8551928</td>
@@ -710,9 +710,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">0.0750060</td>
 <td align="right">-0.0063677</td>
 <td align="right">0.0645989</td>
-<td align="right">0.0338097</td>
-<td align="right">0.0611736</td>
-<td align="right">0.0472832</td>
+<td align="right">0.0341936</td>
+<td align="right">0.0615160</td>
+<td align="right">0.0668723</td>
 <td align="right">0</td>
 <td align="right">0.9376369</td>
 <td align="right">0.2227329</td>
@@ -726,11 +726,11 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0610984</td>
 <td align="right">-0.0578672</td>
 <td align="right">0.0809943</td>
-<td align="right">0.0332801</td>
-<td align="right">0.0796531</td>
-<td align="right">0.0464402</td>
+<td align="right">0.0336579</td>
+<td align="right">0.0800990</td>
+<td align="right">0.0656800</td>
 <td align="right">0</td>
-<td align="right">0.6741201</td>
+<td align="right">0.6741202</td>
 <td align="right">0.4455910</td>
 <td align="right">0.3782927</td>
 <td align="right">8</td>
@@ -742,9 +742,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">-0.0436094</td>
 <td align="right">0.0259745</td>
 <td align="right">0.0597947</td>
-<td align="right">0.0358136</td>
-<td align="right">0.0584407</td>
-<td align="right">0.0500542</td>
+<td align="right">0.0362203</td>
+<td align="right">0.0587679</td>
+<td align="right">0.0707912</td>
 <td align="right">0</td>
 <td align="right">0.6227459</td>
 <td align="right">0.4580494</td>
@@ -758,9 +758,9 @@ cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 <td align="right">0.0227238</td>
 <td align="right">-0.0246112</td>
 <td align="right">0.0714158</td>
-<td align="right">0.0350860</td>
-<td align="right">0.0698359</td>
-<td align="right">0.0489158</td>
+<td align="right">0.0354844</td>
+<td align="right">0.0702268</td>
+<td align="right">0.0691813</td>
 <td align="right">0</td>
 <td align="right">0.3869068</td>
 <td align="right">0.7462578</td>

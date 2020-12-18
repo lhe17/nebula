@@ -3,8 +3,6 @@ title: "A fast negative binomial mixed model for analyzing multi-subject single-
 author: "Liang He"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-    toc: yes
   md_document:
     variant: markdown_github
 vignette: >
@@ -78,7 +76,7 @@ The subject IDs of each cell are stored in ```sample_data$sid```. The subject ID
 head(sample_data$sid)
 table(sample_data$sid)
 ```
-The next step is to build a design matrix for the predictors. The example data set includes a data frame consisting of three predictors stored in ```sample_data$pred```. To build the design matrix, we can use the function ```model.matrix```. 
+The next step is to build a design matrix for the predictors. The example data set includes a data frame consisting of three predictors stored in ```sample_data$pred```. To build the design matrix, we can use the function ```model.matrix```. The intercept term must be included in the design matrix. 
 ```{r,echo=TRUE}
 head(sample_data$pred)
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)

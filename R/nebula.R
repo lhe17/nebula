@@ -270,6 +270,9 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   }
   re_all = as.data.frame(t(re))
   p = sapply(1:nb, function(x) pchisq(re_all[, x]^2/re_all[,x + npar], 1, lower.tail = FALSE))
+  for (i in (npar + 1):(npar + nb)) {
+    re_all[, i] = sqrt(re_all[, i])
+  }
   
   sds[which(sds==0)] = 1
   
@@ -278,9 +281,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   re_all = cbind(re_all, matrix(p, ncol = nb))
   re_all$gene_id = gid
   re_all$gene = gname[gid]
-  for (i in (npar + 1):(npar + nb)) {
-    re_all[, i] = sqrt(re_all[, i])
-  }
+  
   rl = c("Subject", "Cell")
   if (length(predn) == 0) {
     indp = 1:nb
