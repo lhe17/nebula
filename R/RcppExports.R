@@ -37,6 +37,14 @@ cv_offset <- function(offset_c, input, nc) {
     .Call('_nebula_cv_offset', PACKAGE = 'nebula', offset_c, input, nc)
 }
 
+get_cv <- function(offset_c, X_c, beta_c, cell_ind, ncell, nc) {
+    .Call('_nebula_get_cv', PACKAGE = 'nebula', offset_c, X_c, beta_c, cell_ind, ncell, nc)
+}
+
+get_cell <- function(X_c, fid_c, nb_c, k_c) {
+    .Call('_nebula_get_cell', PACKAGE = 'nebula', X_c, fid_c, nb_c, k_c)
+}
+
 ptmg_ll_der_eigen <- function(X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c) {
     .Call('_nebula_ptmg_ll_der_eigen', PACKAGE = 'nebula', X_c, offset_c, Y_c, fid_c, cumsumy_c, posind_c, posindy_c, nb_c, nind_c, k_c, beta_c, sigma_c)
 }

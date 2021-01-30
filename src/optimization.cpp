@@ -495,6 +495,57 @@ Rcpp::List cv_offset(const Eigen::Map<Eigen::VectorXd> & offset_c, int input, co
 }
 
 // [[Rcpp::export]]
+double get_cv(const Eigen::Map<Eigen::VectorXd> offset_c, const Eigen::Map<Eigen::MatrixXd> X_c, 
+              const Eigen::VectorXd & beta_c, const Eigen::VectorXi & cell_ind, const int ncell, const int nc)
+{
+  Eigen::ArrayXd extb = offset_c;
+  for(int i=0; i<ncell; i++)
+  {
+    int ind = cell_ind(i)-1;
+    extb = extb + X_c.col(ind).array()*beta_c(ind);
+  }
+  extb = extb.array().exp();
+  double cv = 0;
+  double moffset = extb.mean();
+  if(moffset>0)
+  {
+    cv = (extb-moffset).square().sum();
+    cv = cv/nc/(moffset*moffset);
+  }
+  return cv;
+}
+
+// [[Rcpp::export]]
+Eigen::VectorXd get_cell(const Eigen::Map<Eigen::MatrixXd> X_c, const Eigen::VectorXi & fid_c, const int nb_c, const int k_c)
+{
+  Eigen::VectorXd iscell = Eigen::VectorXd::Zero(nb_c);
+  for(int i=0; i<nb_c; i++)
+  {
+    for(int j=0;j<k_c;j++)
+    {
+      int flag = 0;
+      int end = fid_c[j+1];
+      int start = fid_c(j);
+      double temp = X_c(start,i);
+      for(int k=start;k<end;k++)
+      {
+        if(X_c(k,i)!=temp)
+        {
+          flag = 1;
+          break;
+        }
+      }
+      if(flag==1)
+      {
+        iscell(i) = 1;
+        break;
+      }
+    }
+  }
+  return iscell;
+}
+
+// [[Rcpp::export]]
 Rcpp::List ptmg_ll_der_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eigen::VectorXd> & offset_c,
                      const Eigen::VectorXd & Y_c, const Eigen::VectorXi & fid_c,
                      const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXi & posind_c,
@@ -914,14 +965,17 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
   Eigen::VectorXd vw(k_c);
   Eigen::MatrixXd vwb(k_c,nb_c);
   Eigen::VectorXd gstar_extb_phi(nind_c);
+  int stepd = 0;
+  int maxstd = 10;
 
   //while((step==0)||(likdif>abs(eps*loglik)))
   while((step==0)||(likdif>eps))
   {
     step++;
 
-    double damp = 1;
+    // double damp = 1;
     Eigen::VectorXd damp_w = Eigen::VectorXd::Constant(k_c,1);
+    Eigen::VectorXd damp = Eigen::VectorXd::Constant(nb_c,1);
 
     gstar_extb_phi = gstar.array()/(1+gamma/extb.array());
     Eigen::VectorXd db = yx - X_c.transpose()*gstar_extb_phi;
@@ -994,8 +1048,10 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
     loglik += alpha*logw.sum() - lambda*w.sum();
 
     likdif = loglik - loglikp;
+    stepd = 0;
     while((likdif<0)||(std::isinf(loglik)))
     {
+      /*
       damp = damp/2;
 
       if(damp<0.01)
@@ -1003,13 +1059,35 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
         likdif = 0;
         loglik = loglikp;
         break;
+      }*/
+      stepd++;
+      if(stepd>maxstd)
+      {
+        likdif = 0;
+        loglik = loglikp;
+        break;
       }
-
+      
+      for(int i=0;i<nb_c;i++)
+      {
+        if(stepbeta(i)<10)
+          {damp(i)=damp(i)/2;}else{
+            // if((damp<0.5))
+            if(stepd>1)
+            {
+              damp(i) = 0;
+            }else{
+              damp(i) = 1-0.1/stepbeta(i);
+            }
+          }
+      }
+      
       for(int i=0;i<k_c;i++)
       {
         if(steplogw(i)<10)
           {damp_w(i)=damp_w(i)/2;}else{
-            if((damp<0.5))
+            // if((damp<0.5))
+            if(stepd>1)
             {
               damp_w(i) = 0;
             }else{
@@ -1018,8 +1096,9 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
           }
       }
 
-      Eigen::VectorXd new_b = damp*stepbeta;
+      // Eigen::VectorXd new_b = damp*stepbeta;
       // Eigen::VectorXd new_w = damp*steplogw;
+      Eigen::VectorXd new_b = stepbeta.cwiseProduct(damp);
       Eigen::VectorXd new_w = steplogw.cwiseProduct(damp_w);
       beta = beta - new_b;
       logw = logw - new_w;
@@ -1132,6 +1211,7 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
                             Rcpp::Named("loglikp") = loglikp,
                             Rcpp::Named("logdet") = logdet,
                             Rcpp::Named("iter") = step,
+                            Rcpp::Named("damp") = stepd,
                             Rcpp::Named("second") = sec_ord);
 
 }
@@ -1198,14 +1278,17 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
   Eigen::MatrixXd vb2(nb_c,nb_c);
   Eigen::MatrixXd vwb(k_c,nb_c);
   Eigen::VectorXd gstar_extb_phi(nind_c);
+  int stepd = 0;
+  int maxstd = 10;
 
   //while((step==0)||(likdif>abs(eps*loglik)))
   while((step==0)||(likdif>eps))
   {
     step++;
 
-    double damp = 1;
+    // double damp = 1;
     Eigen::VectorXd damp_w = Eigen::VectorXd::Constant(k_c,1);
+    Eigen::VectorXd damp = Eigen::VectorXd::Constant(nb_c,1);
 
     gstar_extb_phi = gstar.array()/(1+gamma/extb.array());
     Eigen::VectorXd db = yx - X_c.transpose()*gstar_extb_phi;
@@ -1276,21 +1359,46 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     loglik = loglik - logw.dot(logw)/alpha/2 - k_c/2*log(alpha);
 
     likdif = loglik - loglikp;
+    stepd = 0;
     while((likdif<0)||(std::isinf(loglik)))
     {
-      damp = damp/2;
-      if(damp<1e-2)
+      /*
+       damp = damp/2;
+       
+       if(damp<0.01)
+       {
+       likdif = 0;
+       loglik = loglikp;
+       break;
+       }*/
+      stepd++;
+      if(stepd>maxstd)
       {
         likdif = 0;
         loglik = loglikp;
         break;
       }
       
+      for(int i=0;i<nb_c;i++)
+      {
+        if(stepbeta(i)<10)
+          {damp(i)=damp(i)/2;}else{
+            // if((damp<0.5))
+            if(stepd>1)
+            {
+              damp(i) = 0;
+            }else{
+              damp(i) = 1-0.1/stepbeta(i);
+            }
+          }
+      }
+      
       for(int i=0;i<k_c;i++)
       {
         if(steplogw(i)<10)
           {damp_w(i)=damp_w(i)/2;}else{
-            if((damp<0.5))
+            // if((damp<0.5))
+            if(stepd>1)
             {
               damp_w(i) = 0;
             }else{
@@ -1299,8 +1407,9 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
           }
       }
       
-      Eigen::VectorXd new_b = damp*stepbeta;
+      // Eigen::VectorXd new_b = damp*stepbeta;
       // Eigen::VectorXd new_w = damp*steplogw;
+      Eigen::VectorXd new_b = stepbeta.cwiseProduct(damp);
       Eigen::VectorXd new_w = steplogw.cwiseProduct(damp_w);
       beta = beta - new_b;
       logw = logw - new_w;
@@ -1409,6 +1518,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
                             Rcpp::Named("loglikp") = loglikp,
                             Rcpp::Named("logdet") = logdet,
                             Rcpp::Named("iter") = step,
+                            Rcpp::Named("damp") = stepd,
                             Rcpp::Named("second") = sec_ord);
 
 }

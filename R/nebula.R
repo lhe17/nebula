@@ -30,7 +30,7 @@
 
 
 nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max = c(10,1000), 
-                   model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=200, opt='lbfgs',verbose = TRUE, cpc = 0.005)
+                   model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',verbose = TRUE, cpc = 0.005)
 {
   reml = 0
   eps = 1e-06
@@ -48,15 +48,18 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   nind = ncol(count)
   gname = rownames(count)
   predn = sds = NULL
+  intcol = NULL
   if (is.null(pred)) {
     pred = matrix(1, ncol = 1, nrow = nind)
     sds = 1
+    intcol = 1
   }else {
     predn = colnames(pred)
     pred = center_m(as.matrix(pred))
     sds = pred$sds
     if((sum(sds==0)>1)|(sum(sds<0)>0))
     {stop("Some predictors have zero variation or a zero vector.")}
+    intcol = which(sds==0)
     pred = as.matrix(pred$pred)
     if(nrow(pred)!=nind)
     {stop('The number of rows of the design matrix should be equal to the number of columns of the count matrix.')}
@@ -97,6 +100,10 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   k = length(levels)
   fid = which(c(1, diff(id)) == 1)
   fid = as.integer(c(fid, nind + 1))
+  
+  cell_ind = get_cell(pred,fid-1,nb,k)
+  cell_ind = which(cell_ind>0)
+  ncell = length(cell_ind)
   
   mfs = nind/k
   cumsumy = call_cumsumy(count, fid - 1, k, ngene)
@@ -155,6 +162,9 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       vare = re_t[(nb + 1):(nb + 2)]
       para = vare
       
+      if(ncell>0)
+      {cv2 = get_cv(offset,pred,re_t[1:nb],cell_ind,ncell,nind)}
+      
       gni = mfs * vare[2]
       
       if(method == "LN")
@@ -162,13 +172,13 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         if(model=="NBGMM")
         {
           if (gni < cutoff_cell) {
-            re_t = re_t = tryCatch({bobyqa(para, pql_ll, reml = reml, eps = eps, ord=ord,
-                          betas = betae, posindy = posv$posindy, X = pred,offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
+            re_t = tryCatch({bobyqa(para, pql_ll, reml = reml, eps = eps, ord=ord,
+                          betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy, X = pred,offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                           ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                           nind = nind, lower = min, upper = max)},
                           error = function(e){
                             bobyqa(para, pql_ll, reml = reml, eps = eps, ord=1,
-                                   betas = betae, posindy = posv$posindy, X = pred,offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
+                                   betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy, X = pred,offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                                    ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                                    nind = nind, lower = min, upper = max)
                           })
@@ -176,13 +186,16 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
             vare = re_t$par[1:2]
             fit = 2
           }else{
-            if ((gni/(1+cv2)) < kappa) {
-              varsig = tryCatch({nlminb(para[1], pql_gamma_ll, gamma = para[2],betas = betae, reml = reml, eps = eps,ord=ord,
+            kappa_obs = gni/(1+cv2)
+            # if ((gni/(1+cv2)) < kappa)
+            if((kappa_obs<20)|((kappa_obs<kappa)&(vare[1]<(8/kappa_obs))))
+            {
+              varsig = tryCatch({nlminb(para[1], pql_gamma_ll, gamma = para[2],betas = betae, vinit = para, intcol = intcol, reml = reml, eps = eps,ord=ord,
                               posindy = posv$posindy, X = pred, offset = offset,Y = posv$Y, n_one = posv$n_onetwo, ytwo = posv$ytwo,
                               fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                               nind = nind, lower = min[1], upper = max[1])},
                               error = function(e){
-                                nlminb(para[1], pql_gamma_ll, gamma = para[2], betas = betae, reml = reml, eps = eps,ord=1,
+                                nlminb(para[1], pql_gamma_ll, gamma = para[2], betas = betae, vinit = para, intcol = intcol, reml = reml, eps = eps,ord=1,
                                        posindy = posv$posindy, X = pred, offset = offset,Y = posv$Y, n_one = posv$n_onetwo, ytwo = posv$ytwo,
                                        fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                                        nind = nind, lower = min[1], upper = max[1])
@@ -194,14 +207,14 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         }else{
           if (gni < cutoff_cell) {
             re_t = bobyqa(para, pql_nbm_ll, reml = reml,
-                          eps = eps, ord=1, betas = betae, posindy = posv$posindy,
+                          eps = eps, ord=1, betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy,
                           X = pred, offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                           ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                           nind = nind, lower = min, upper = max)
             vare = re_t$par[1:2]
             fit = 4
           }else{
-            varsig = nlminb(para[1], pql_nbm_gamma_ll, gamma = para[2],betas = betae, reml = reml, eps = eps,ord=1,
+            varsig = nlminb(para[1], pql_nbm_gamma_ll, gamma = para[2],betas = betae, vinit = para, intcol = intcol, reml = reml, eps = eps,ord=1,
                           posindy = posv$posindy, X = pred, offset = offset,Y = posv$Y, n_one = posv$n_onetwo, ytwo = posv$ytwo,
                           fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                           nind = nind, lower = min[1], upper = max[1])
@@ -213,13 +226,13 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         
         if (model == "NBGMM") {
           re_t = tryCatch({bobyqa(para, pql_ll, reml = reml, eps = eps, ord=ord,
-                        betas = betae, posindy = posv$posindy, X = pred,
+                        betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy, X = pred,
                         offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                         ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                         nind = nind, lower = min, upper = max)},
                         error = function(e){
                           bobyqa(para, pql_ll, reml = reml, eps = eps, ord=1,
-                                 betas = betae, posindy = posv$posindy, X = pred,
+                                 betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy, X = pred,
                                  offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                                  ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                                  nind = nind, lower = min, upper = max)
@@ -228,7 +241,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         }
         else {
           re_t = bobyqa(para, pql_nbm_ll, reml = reml,
-                        eps = eps, ord=1, betas = betae, posindy = posv$posindy,
+                        eps = eps, ord=1, betas = betae, vinit = para, intcol = intcol, posindy = posv$posindy,
                         X = pred, offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                         ytwo = posv$ytwo, fid = fid, cumsumy = cumsumy[x,], posind = posind[[x]], nb = nb, k = k,
                         nind = nind, lower = min, upper = max)
@@ -237,16 +250,17 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         vare = re_t$par[1:2]
       }
       
+      betae[intcol] = betae[intcol] - vare[1]/2
       if (model == "NBGMM") {
         repml = opt_pml(pred, offset, posv$Y, fid-1, cumsumy[x, ], posind[[x]]-1, posv$posindy,nb, nind, k, betae, vare, reml, 1e-06,1)
-      }
-      else {
+      }else {
         repml = opt_pml_nbm(pred, offset, posv$Y, fid-1, cumsumy[x, ], posind[[x]]-1,posv$posindy, nb, nind, k, betae,vare, reml, 1e-06,1)
       }
+      if(repml$damp>10)
+      {conv = -10}
       c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
     })
-  }
-  else {
+  }else {
     re = sapply(gid, function(x) {
       posv = call_posindy(count, x - 1, nind)
       para = c(log(posv$mct) - moffset, rep(0, nb - 1),1)
@@ -274,7 +288,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     re_all[, i] = sqrt(re_all[, i])
   }
   
-  sds[which(sds==0)] = 1
+  sds[intcol] = 1
   
   re_all[, c(1:nb,npar+(1:nb))] = t(t(re_all[, c(1:nb,npar+(1:nb))])/c(sds,sds))
   

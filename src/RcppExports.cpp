@@ -167,6 +167,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_cv
+double get_cv(const Eigen::Map<Eigen::VectorXd> offset_c, const Eigen::Map<Eigen::MatrixXd> X_c, const Eigen::VectorXd& beta_c, const Eigen::VectorXi& cell_ind, const int ncell, const int nc);
+RcppExport SEXP _nebula_get_cv(SEXP offset_cSEXP, SEXP X_cSEXP, SEXP beta_cSEXP, SEXP cell_indSEXP, SEXP ncellSEXP, SEXP ncSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type offset_c(offset_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type X_c(X_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type beta_c(beta_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type cell_ind(cell_indSEXP);
+    Rcpp::traits::input_parameter< const int >::type ncell(ncellSEXP);
+    Rcpp::traits::input_parameter< const int >::type nc(ncSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_cv(offset_c, X_c, beta_c, cell_ind, ncell, nc));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_cell
+Eigen::VectorXd get_cell(const Eigen::Map<Eigen::MatrixXd> X_c, const Eigen::VectorXi& fid_c, const int nb_c, const int k_c);
+RcppExport SEXP _nebula_get_cell(SEXP X_cSEXP, SEXP fid_cSEXP, SEXP nb_cSEXP, SEXP k_cSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type X_c(X_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type fid_c(fid_cSEXP);
+    Rcpp::traits::input_parameter< const int >::type nb_c(nb_cSEXP);
+    Rcpp::traits::input_parameter< const int >::type k_c(k_cSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_cell(X_c, fid_c, nb_c, k_c));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ptmg_ll_der_eigen
 Rcpp::List ptmg_ll_der_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::Map<Eigen::VectorXd>& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXi& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXi& posind_c, const Eigen::VectorXi& posindy_c, const int nb_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const Eigen::VectorXd& sigma_c);
 RcppExport SEXP _nebula_ptmg_ll_der_eigen(SEXP X_cSEXP, SEXP offset_cSEXP, SEXP Y_cSEXP, SEXP fid_cSEXP, SEXP cumsumy_cSEXP, SEXP posind_cSEXP, SEXP posindy_cSEXP, SEXP nb_cSEXP, SEXP nind_cSEXP, SEXP k_cSEXP, SEXP beta_cSEXP, SEXP sigma_cSEXP) {
@@ -295,6 +325,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_nebula_call_posindy", (DL_FUNC) &_nebula_call_posindy, 3},
     {"_nebula_center_m", (DL_FUNC) &_nebula_center_m, 1},
     {"_nebula_cv_offset", (DL_FUNC) &_nebula_cv_offset, 3},
+    {"_nebula_get_cv", (DL_FUNC) &_nebula_get_cv, 6},
+    {"_nebula_get_cell", (DL_FUNC) &_nebula_get_cell, 4},
     {"_nebula_ptmg_ll_der_eigen", (DL_FUNC) &_nebula_ptmg_ll_der_eigen, 12},
     {"_nebula_ptmg_ll_der_hes_eigen", (DL_FUNC) &_nebula_ptmg_ll_der_hes_eigen, 12},
     {"_nebula_opt_pml", (DL_FUNC) &_nebula_opt_pml, 15},

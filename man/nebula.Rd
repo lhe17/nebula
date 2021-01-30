@@ -14,7 +14,7 @@ nebula(
   model = "NBGMM",
   method = "LN",
   cutoff_cell = 20,
-  kappa = 200,
+  kappa = 800,
   opt = "lbfgs",
   verbose = TRUE,
   cpc = 0.005
