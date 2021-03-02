@@ -1,3 +1,6 @@
+NEBULA v1.1.7
+=============
+
 Overview
 --------
 
@@ -48,8 +51,8 @@ Functions
 
 The current version provides the following functions.
 
--   `nebula`: performs association analysis given a count matrix and
-    subject IDs.
+-   `nebula`: performs an association analysis using NBMMs given a count
+    matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
 
 Basic usage
@@ -64,8 +67,8 @@ library(nebula)
 data(sample_data)
 ```
 
-The example data set includes a count matrix of 6030 cells from 30
-subjects for 10 genes.
+The example data set includes a count matrix of 6030 cells and 10 genes
+from 30 subjects.
 
 ``` r
 dim(sample_data$count)
@@ -143,34 +146,34 @@ re
 #> 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
 #> 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
 #> 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
-#> 5          -1.981546  0.011486801 -0.025051853     0.032882833     0.06280883
-#> 6          -1.951561  0.013464590 -0.012557319    -0.031646274     0.07519685
+#> 5          -1.979437  0.011557090 -0.025198987     0.032890493     0.06155853
+#> 6          -1.949991  0.013483039 -0.012548791    -0.031590577     0.07440949
 #> 7          -1.969248 -0.003531361  0.075230699    -0.009075031     0.06185028
-#> 8          -1.964371  0.013639930 -0.061302756    -0.059284665     0.07786371
+#> 8          -1.964371  0.013639930 -0.061302756    -0.059284665     0.07786361
 #> 9          -2.072699 -0.017372176 -0.043828288     0.026624998     0.05737632
-#> 10         -2.045646  0.030742876  0.022260806    -0.025516032     0.06842808
+#> 10         -2.045646  0.030742876  0.022260805    -0.025516032     0.06842796
 #>         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
-#> 1  0.03534659 0.06449424   0.06879634 4.362881e-198 0.6354810 0.1291514
-#> 2  0.03787429 0.06255848   0.07385888 2.052806e-240 0.9436079 0.3896818
-#> 3  0.03696089 0.09238230   0.07258521 6.275233e-121 0.6271261 0.9792875
-#> 4  0.03704556 0.05624824   0.07252600 5.822961e-291 0.8777381 0.6213846
-#> 5  0.03751548 0.06223718   0.07332914 1.860076e-218 0.7594613 0.6872997
-#> 6  0.03623837 0.07397575   0.07088221 1.694944e-148 0.7102234 0.8652074
-#> 7  0.03631618 0.06068697   0.07133729 1.871848e-222 0.9225364 0.2151043
-#> 8  0.03551902 0.07955880   0.06969747 1.959009e-140 0.7009654 0.4409832
-#> 9  0.03816039 0.05767972   0.07453316 9.307378e-286 0.6489358 0.4473406
-#> 10 0.03798696 0.06917499   0.07374595 2.296650e-196 0.4183421 0.7476010
+#> 1  0.03534659 0.06449424   0.06879634 4.362617e-198 0.6354810 0.1291514
+#> 2  0.03787429 0.06255849   0.07385888 2.052788e-240 0.9436079 0.3896819
+#> 3  0.03696089 0.09238230   0.07258521 6.275230e-121 0.6271261 0.9792875
+#> 4  0.03704556 0.05624824   0.07252600 5.822948e-291 0.8777381 0.6213846
+#> 5  0.03750948 0.06101307   0.07331551 7.432319e-227 0.7579977 0.6795995
+#> 6  0.03623477 0.07321208   0.07087566 2.257914e-151 0.7098168 0.8639067
+#> 7  0.03631619 0.06068697   0.07133730 1.872102e-222 0.9225364 0.2151043
+#> 8  0.03551903 0.07955877   0.06969748 1.957495e-140 0.7009654 0.4409831
+#> 9  0.03816039 0.05767972   0.07453316 9.307495e-286 0.6489358 0.4473406
+#> 10 0.03798694 0.06917485   0.07374591 2.292903e-196 0.4183419 0.7476005
 #>    p_cccontrol gene_id gene
 #> 1    0.4919443       1    A
 #> 2    0.7627706       2    B
 #> 3    0.5058082       3    C
 #> 4    0.2861434       4    D
-#> 5    0.6538444       5    E
-#> 6    0.6552629       6    F
+#> 5    0.6537089       5    E
+#> 6    0.6558008       6    F
 #> 7    0.8987718       7    G
 #> 8    0.3949916       8    H
 #> 9    0.7209245       9    I
-#> 10   0.7293434      10    J
+#> 10   0.7293432      10    J
 #> 
 #> $overdispersion
 #>       Subject      Cell
@@ -178,8 +181,8 @@ re
 #> 2  0.07102681 0.9255032
 #> 3  0.17159404 0.9266395
 #> 4  0.05026165 0.8124118
-#> 5  0.07507489 1.2674146
-#> 6  0.12398378 1.1096065
+#> 5  0.07075366 1.2674146
+#> 6  0.12086392 1.1096065
 #> 7  0.07360445 0.9112956
 #> 8  0.13571262 0.7549629
 #> 9  0.05541398 0.8139652
@@ -189,9 +192,8 @@ re
 #>  [1] 1 1 1 1 1 1 1 1 1 1
 #> 
 #> $algorithm
-#>  [1] "NBGMM (LN)"    "NBGMM (LN)"    "NBGMM (LN)"    "NBGMM (LN)"   
-#>  [5] "NBGMM (LN+HL)" "NBGMM (LN+HL)" "NBGMM (LN)"    "NBGMM (LN)"   
-#>  [9] "NBGMM (LN)"    "NBGMM (LN)"
+#>  [1] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
+#>  [6] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
 ```
 
 The function by default fitted the negative binomial gamma mixed model
@@ -233,15 +235,14 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
 Selection between NEBULA-LN and NEBULA-HL
 -----------------------------------------
 
-In *nebula*, a user can choose one of the two algorithms to fit an
-NBGMM. NEBULA-LN uses an approximated likelihood based on the law of
-large numbers, and NEBULA-HL uses an h-likelihood. A user can select
-these methods through `method='LN'` or `method='HL'`. NEBULA-LN is
-faster and performs particularly well when the number of cells per
-subject is large. In the following analysis of the example data
-comprising \~200 cells per subject, the difference of the estimated
-cell-level overdispersions between NEBULA-LN and NEBULA-HL is \~5% for
-most genes.
+In *nebula*, a user can choose one of the two algorithms to fit an NBMM.
+NEBULA-LN uses an approximated likelihood based on the law of large
+numbers, and NEBULA-HL uses an h-likelihood. A user can select these
+methods through `method='LN'` or `method='HL'`. NEBULA-LN is faster and
+performs particularly well when the number of cells per subject (CPS) is
+large. In the following analysis of the example data set comprising
+\~200 cells per subject, the difference of the estimated cell-level
+overdispersions between NEBULA-LN and NEBULA-HL is \~5% for most genes.
 
 ``` r
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
@@ -253,40 +254,42 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432304 0.9284704 0.08125256 0.8840821
-#> 2  0.07455454 0.9726513 0.07102681 0.9255032
-#> 3  0.17403265 0.9817571 0.17159404 0.9266395
-#> 4  0.05352150 0.8516686 0.05026165 0.8124118
-#> 5  0.07480036 1.3254378 0.07507489 1.2674146
-#> 6  0.12372437 1.1653120 0.12398378 1.1096065
-#> 7  0.07724763 0.9578175 0.07360445 0.9112956
-#> 8  0.13797543 0.7991951 0.13571262 0.7549629
-#> 9  0.05879494 0.8568852 0.05541398 0.8139652
-#> 10 0.09782377 0.9940205 0.09496649 0.9410035
+#> 1  0.08432321 0.9284703 0.08125256 0.8840821
+#> 2  0.07455464 0.9726512 0.07102681 0.9255032
+#> 3  0.17403276 0.9817570 0.17159404 0.9266395
+#> 4  0.05352148 0.8516682 0.05026165 0.8124118
+#> 5  0.07480033 1.3254379 0.07075366 1.2674146
+#> 6  0.12372426 1.1653128 0.12086392 1.1096065
+#> 7  0.07724824 0.9578169 0.07360445 0.9112956
+#> 8  0.13797646 0.7991954 0.13571262 0.7549629
+#> 9  0.05879492 0.8568854 0.05541398 0.8139652
+#> 10 0.09782335 0.9940223 0.09496649 0.9410035
 ```
 
-Such difference has little impact on testing fixed-effects predictors.
+Such difference has little impact on testing fixed-effects predictors
+under this sample size.
 
 ``` r
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373036 0.1346295   0.4950795 0.6354810 0.1291514   0.4919443
-#> 2  0.9444825 0.3977107   0.7626827 0.9436079 0.3896818   0.7627706
+#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+#> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
 #> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
-#> 5  0.7596198 0.6872260   0.6544751 0.7594613 0.6872997   0.6538444
-#> 6  0.7134192 0.8656693   0.6576835 0.7102234 0.8652074   0.6552629
-#> 7  0.9216994 0.2230951   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017085 0.4443591   0.3955344 0.7009654 0.4409832   0.3949916
+#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
+#> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
+#> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
+#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
+#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
 #> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
-#> 10 0.4199830 0.7510846   0.7308111 0.4183421 0.7476010   0.7293434
+#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
-larger when the cell count per subject becomes lower or the gene
-expression is more sparse. In contrast, NEBULA-HL is slower, but its
-accuracy of estimating the overdispersions depends less on these
+larger when the CPS value becomes lower or the gene expression is more
+sparse. If the CPS value is \<30, *nebula* will set `method='HL'`
+regardless of the user’s input. In contrast, NEBULA-HL is slower, but
+its accuracy of estimating the overdispersions depends less on these
 factors.
 
 When NEBULA-LN is used, the user can opt for better accuracy of
@@ -294,20 +297,21 @@ estimating a smaller subject-level overdispersion through the argument
 *κ*. NEBULA first fits the data using NEBULA-LN. If the estimated *κ*
 for a gene is smaller than the user-defined value, NEBULA-HL will be
 used to estimate the subject-level overdispersion for the gene. The
-default value of *κ* is 200, which can provide a good estimate of the
-subject-level overdispersion as low as \~0.02. This value is sufficent
-for well controlled false positive rate of testing a cell-level
-predictor. We do not recommend using a smaller *κ* than the default
-value. Specifying a larger *κ* can obtain a more accurate estimate of a
-smaller subject-level overdispersion when the cell-level overdispersion
-is large, but will be computationally slower. On the other hand, testing
-a subject-level predictor (i.e., a variable whose values are shared
-across all cells from a subject, such as age, sex, treatment, genotype,
-etc) is more sensitive to the accuracy of the estimated subject-level
-overdispersion. So we recommend using *κ* = 1000 or even larger when
-testing a subject-level predictor. Another option to testing a
-subject-level predictor is to use a Poisson gamma mixed model, which is
-extremely fast (\>50x faster than NEBULA-LN) and decribed below.
+default value of *κ* is 800, which can provide a good estimate of the
+subject-level overdispersion as low as \~0.005. Our simulation results
+suggest that *κ* = 200 is often sufficent for achieving a well
+controlled false positive rate of testing a cell-level predictor. We do
+not recommend using a smaller *κ* than 200. Specifying a larger *κ* can
+obtain a more accurate estimate of a smaller subject-level
+overdispersion when the cell-level overdispersion is large, but will be
+computationally slower. On the other hand, testing a subject-level
+predictor (i.e., a variable whose values are shared across all cells
+from a subject, such as age, sex, treatment, genotype, etc) is more
+sensitive to the accuracy of the estimated subject-level overdispersion.
+So we recommend using *κ* = 800 (as default) or even larger when testing
+a subject-level predictor. Another option to testing a subject-level
+predictor is to use a Poisson gamma mixed model, which is extremely fast
+(\>50x faster than NEBULA-LN) and will be described below.
 
 Filtering low-expressed genes
 -----------------------------
@@ -322,6 +326,22 @@ because there is little statistical power for these genes. Filtering out
 low-expressed genes can be specified by `cpc=0.005` (i.e., counts per
 cell\<0.5%). The argument `cpc` is defined by the ratio between the
 total count of the gene and the number of cells.
+
+Checking convergence for the summary statistics
+-----------------------------------------------
+
+*nebula* reports convergence information about the estimation algorithm
+for each gene along with the summary statistics. This is useful and
+important information for quality control to filter out genes of which
+the estimation procedure potentially does not converge. If the
+convergence code is -30, which indicates a failure of convergence, their
+summary statistics should not be used. If the convergence code is -20,
+it indicates that the optimization algorithm stops at the maximum step
+limit before the convergence. The results should be interpreted with
+caution in this case. The failure of convergence may occur when the
+sample size is very small, there are too few positive counts, or the
+gene has huge overdispersions, in which case the likelihood is flat and
+the optimization is sensitive to the initial values.
 
 Using other mixed models
 ------------------------

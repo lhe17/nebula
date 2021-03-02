@@ -35,11 +35,11 @@ nebula(
 
 \item{model}{'NBGMM', 'PMM' or 'NBLMM'. 'NBGMM' is for fitting a negative binomial gamma mixed model. 'PMM' is for fitting a Poisson gamma mixed model. 'NGLMM' is for fitting a negative binomial lognormal mixed model (the same model as that in the lme4 package). The default is 'NBGMM'.}
 
-\item{method}{'LN' or 'HL'. 'LN' is to use NEBULA-LN and 'HL' is to use NEBULA-HL. This argument is only valid when model='NBGMM'. The default is 'LN'.}
+\item{method}{'LN' or 'HL'. 'LN' is to use NEBULA-LN and 'HL' is to use NEBULA-HL. The default is 'LN'.}
 
 \item{cutoff_cell}{The data will be refit using NEBULA-HL to estimate both overdispersions if the product of the cells per subject and the estimated cell-level overdispersion paremeter \eqn{\phi} is smaller than cutoff_cell. The default is 20.}
 
-\item{kappa}{Please see the vignettes for more details. The default is 200.}
+\item{kappa}{Please see the vignettes for more details. The default is 800.}
 
 \item{opt}{'lbfgs' or 'trust'. Specifying the optimization algorithm used in NEBULA-LN. The default is 'lbfgs'. If it is 'trust', a trust region algorithm based on the Hessian matrix wil be used for optimization.}
 
@@ -52,9 +52,9 @@ summary: The estimated coefficient, standard erro and p-value for each predictor
 
 overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 
-convergence: More information about the convergence of the algorithm for each gene.
+convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.
 
-algorithm: The algorithm used for analyzing the gene.
+algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
 }
 \description{
 Association analysis of a multi-subject single-cell data set using a fast negative binomial mixed model

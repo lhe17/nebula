@@ -954,8 +954,7 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
   {loglik -= Y_c(i)*extbphil(posindy_c(i));}
 
   loglik += alpha*logw.sum() - lambda*w.sum();
-
-
+  
   //double eps = 1e-6;
   double loglikp = 0;
   double likdif = 0;
@@ -967,9 +966,10 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
   Eigen::VectorXd gstar_extb_phi(nind_c);
   int stepd = 0;
   int maxstd = 10;
+  int maxstep = 50;
 
   //while((step==0)||(likdif>abs(eps*loglik)))
-  while((step==0)||(likdif>eps))
+  while((step==0)||((likdif>eps)&&(step<maxstep)))
   {
     step++;
 
@@ -1022,22 +1022,24 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
     Eigen::VectorXd dwvw = dw.array()/vw.array();
     // Eigen::VectorXd dbvwbvbdw = vb.ldlt().solve(db - vwb.transpose()*dwvw);
     Eigen::VectorXd stepbeta = vb2.ldlt().solve(db - vwb.transpose()*dwvw);
-    beta = beta + stepbeta;
+    //beta = beta + stepbeta;
+    Eigen::VectorXd new_b = beta + stepbeta;
     Eigen::VectorXd steplogw = dwvw - ((vwb*stepbeta).array()/vw.array()).matrix();
-    logw = logw + steplogw;
+    //logw = logw + steplogw;
+    Eigen::VectorXd new_w = logw + steplogw;
 
     loglikp = loglik;
     loglik = 0;
 
-    extb = offset_c + X_c*beta;
-    w = logw.array().exp();
+    extb = offset_c + X_c*new_b;
+    w = new_w.array().exp();
 
     for(unsigned int i=0;i<nelem;i++)
     {loglik += extb(posindy_c(i))*Y_c(i);}
-    loglik += logw.dot(cumsumy_c);
+    loglik += new_w.dot(cumsumy_c);
     for(int i=0;i<k_c;i++)
     {
-      extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+logw(i);
+      extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+new_w(i);
     }
     extb = extb.array().exp();
 
@@ -1045,22 +1047,17 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
     loglik -= gamma*extbphil.sum();
     for(unsigned int i=0;i<nelem;i++)
     {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-    loglik += alpha*logw.sum() - lambda*w.sum();
+    loglik += alpha*new_w.sum() - lambda*w.sum();
 
     likdif = loglik - loglikp;
     stepd = 0;
+    double minstep = 20;
+    
     while((likdif<0)||(std::isinf(loglik)))
     {
-      /*
-      damp = damp/2;
-
-      if(damp<0.01)
-      {
-        likdif = 0;
-        loglik = loglikp;
-        break;
-      }*/
       stepd++;
+      minstep = minstep/2;
+      
       if(stepd>maxstd)
       {
         likdif = 0;
@@ -1070,50 +1067,47 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
       
       for(int i=0;i<nb_c;i++)
       {
-        if(stepbeta(i)<10)
-          {damp(i)=damp(i)/2;}else{
-            // if((damp<0.5))
-            if(stepd>1)
-            {
-              damp(i) = 0;
-            }else{
-              damp(i) = 1-0.1/stepbeta(i);
-            }
+        if((stepbeta(i)<20)&&(stepbeta(i)>-20))
+          {
+            damp(i)=damp(i)/2;
+            new_b(i) = beta(i) + stepbeta(i)*damp(i);
+          }else{
+              if(stepbeta(i)>0)
+              {
+                new_b(i) = beta(i) + minstep;
+              }else{
+                new_b(i) = beta(i) - minstep;
+              }
           }
       }
       
       for(int i=0;i<k_c;i++)
       {
-        if(steplogw(i)<10)
-          {damp_w(i)=damp_w(i)/2;}else{
-            // if((damp<0.5))
-            if(stepd>1)
+        if((steplogw(i)<20)&&(steplogw(i)>-20))
+          {
+            damp_w(i)=damp_w(i)/2;
+            new_w(i) = logw(i) + steplogw(i)*damp_w(i);
+          }else{
+            if(steplogw(i)>0)
             {
-              damp_w(i) = 0;
+              new_w(i) = logw(i) + minstep;
             }else{
-              damp_w(i) = 1-0.1/steplogw(i);
+              new_w(i) = logw(i) - minstep;
             }
           }
       }
 
-      // Eigen::VectorXd new_b = damp*stepbeta;
-      // Eigen::VectorXd new_w = damp*steplogw;
-      Eigen::VectorXd new_b = stepbeta.cwiseProduct(damp);
-      Eigen::VectorXd new_w = steplogw.cwiseProduct(damp_w);
-      beta = beta - new_b;
-      logw = logw - new_w;
-
       loglik = 0;
 
-      extb = offset_c + X_c*beta;
-      w = logw.array().exp();
+      extb = offset_c + X_c*new_b;
+      w = new_w.array().exp();
 
       for(unsigned int i=0;i<nelem;i++)
       {loglik += extb(posindy_c(i))*Y_c(i);}
-      loglik += logw.dot(cumsumy_c);
+      loglik += new_w.dot(cumsumy_c);
       for(int i=0;i<k_c;i++)
       {
-        extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+logw(i);
+        extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+new_w(i);
       }
       extb = extb.array().exp();
 
@@ -1121,13 +1115,15 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
       loglik -= gamma*extbphil.sum();
       for(unsigned int i=0;i<nelem;i++)
       {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-      loglik += alpha*logw.sum() - lambda*w.sum();
+      loglik += alpha*new_w.sum() - lambda*w.sum();
 
       likdif = loglik - loglikp;
 
     }
-
+    beta = new_b;
+    logw = new_w;
   }
+  
   double logdet;
   if(reml==1)
   {
@@ -1184,9 +1180,6 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
       four_der += lambda*w;
       temp_der = four_der.array()/vws;
       sec_ord -= temp_der.sum()/8;
-    
-      four_der = four_der.array()*four_der.array()/(vws*vws);
-      sec_ord += 35*four_der.sum()/384;
       
       gstar_extb_phi = gstar_extb_phi.array()/extbg;
       gstar = gstar_extb_phi.array()*(gamma*gamma*gamma-(11*gamma*gamma)*extb.array()+(11*gamma)*extbp-extbp*extb.array());
@@ -1197,12 +1190,10 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
       four_der = gamma*four_der;
       four_der += lambda*w;
       temp_der = four_der.array()*third_der.array()/(vws*vws);
-      sec_ord += 7*temp_der.sum()/96;
+      sec_ord += 7*temp_der.sum()/48;
     }
      
   }
-
-  // double logdet = vw.array().log().sum();
 
   return Rcpp::List::create(Rcpp::Named("beta") = beta,
                             Rcpp::Named("logw") = logw,
@@ -1280,9 +1271,10 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
   Eigen::VectorXd gstar_extb_phi(nind_c);
   int stepd = 0;
   int maxstd = 10;
+  int maxstep = 50;
 
   //while((step==0)||(likdif>abs(eps*loglik)))
-  while((step==0)||(likdif>eps))
+  while((step==0)||((likdif>eps)&&(step<maxstep)))
   {
     step++;
 
@@ -1334,21 +1326,21 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     Eigen::VectorXd dwvw = dw.array()/vw.array();
     // Eigen::VectorXd dbvwbvbdw = vb.ldlt().solve(db - vwb.transpose()*dwvw);
     Eigen::VectorXd stepbeta = vb2.ldlt().solve(db - vwb.transpose()*dwvw);
-    beta = beta + stepbeta;
+    Eigen::VectorXd new_b = beta + stepbeta;
     Eigen::VectorXd steplogw = dwvw - ((vwb*stepbeta).array()/vw.array()).matrix();
-    logw = logw + steplogw;
+    Eigen::VectorXd new_w = logw + steplogw;
 
     loglikp = loglik;
     loglik = 0;
 
-    extb = offset_c + X_c*beta;
+    extb = offset_c + X_c*new_b;
 
     for(unsigned int i=0;i<nelem;i++)
     {loglik += extb(posindy_c(i))*Y_c(i);}
-    loglik += logw.dot(cumsumy_c);
+    loglik += new_w.dot(cumsumy_c);
     for(int i=0;i<k_c;i++)
     {
-      extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+logw(i);
+      extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+new_w(i);
     }
     extb = extb.array().exp();
 
@@ -1356,22 +1348,17 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     loglik -= gamma*extbphil.sum();
     for(unsigned int i=0;i<nelem;i++)
     {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-    loglik = loglik - logw.dot(logw)/alpha/2 - k_c/2*log(alpha);
+    loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2*log(alpha);
 
     likdif = loglik - loglikp;
     stepd = 0;
+    double minstep = 20;
+    
     while((likdif<0)||(std::isinf(loglik)))
     {
-      /*
-       damp = damp/2;
-       
-       if(damp<0.01)
-       {
-       likdif = 0;
-       loglik = loglikp;
-       break;
-       }*/
       stepd++;
+      minstep = minstep/2;
+      
       if(stepd>maxstd)
       {
         likdif = 0;
@@ -1381,49 +1368,46 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
       
       for(int i=0;i<nb_c;i++)
       {
-        if(stepbeta(i)<10)
-          {damp(i)=damp(i)/2;}else{
-            // if((damp<0.5))
-            if(stepd>1)
-            {
-              damp(i) = 0;
-            }else{
-              damp(i) = 1-0.1/stepbeta(i);
-            }
+        if((stepbeta(i)<20)&&(stepbeta(i)>-20))
+        {
+          damp(i)=damp(i)/2;
+          new_b(i) = beta(i) + stepbeta(i)*damp(i);
+        }else{
+          if(stepbeta(i)>0)
+          {
+            new_b(i) = beta(i) + minstep;
+          }else{
+            new_b(i) = beta(i) - minstep;
           }
+        }
       }
       
       for(int i=0;i<k_c;i++)
       {
-        if(steplogw(i)<10)
-          {damp_w(i)=damp_w(i)/2;}else{
-            // if((damp<0.5))
-            if(stepd>1)
-            {
-              damp_w(i) = 0;
-            }else{
-              damp_w(i) = 1-0.1/steplogw(i);
-            }
+        if((steplogw(i)<20)&&(steplogw(i)>-20))
+        {
+          damp_w(i)=damp_w(i)/2;
+          new_w(i) = logw(i) + steplogw(i)*damp_w(i);
+        }else{
+          if(steplogw(i)>0)
+          {
+            new_w(i) = logw(i) + minstep;
+          }else{
+            new_w(i) = logw(i) - minstep;
           }
+        }
       }
-      
-      // Eigen::VectorXd new_b = damp*stepbeta;
-      // Eigen::VectorXd new_w = damp*steplogw;
-      Eigen::VectorXd new_b = stepbeta.cwiseProduct(damp);
-      Eigen::VectorXd new_w = steplogw.cwiseProduct(damp_w);
-      beta = beta - new_b;
-      logw = logw - new_w;
 
       loglik = 0;
 
-      extb = offset_c + X_c*beta;
+      extb = offset_c + X_c*new_b;
 
       for(unsigned int i=0;i<nelem;i++)
       {loglik += extb(posindy_c(i))*Y_c(i);}
-      loglik += logw.dot(cumsumy_c);
+      loglik += new_w.dot(cumsumy_c);
       for(int i=0;i<k_c;i++)
       {
-        extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+logw(i);
+        extb.segment(fid_c(i),len(i)) = extb.segment(fid_c(i),len(i)).array()+new_w(i);
       }
       extb = extb.array().exp();
 
@@ -1431,12 +1415,13 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
       loglik -= gamma*extbphil.sum();
       for(unsigned int i=0;i<nelem;i++)
       {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-      loglik = loglik - logw.dot(logw)/alpha/2 - k_c/2*log(alpha);
+      loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2*log(alpha);
 
       likdif = loglik - loglikp;
-
     }
-
+    
+    beta = new_b;
+    logw = new_w;
   }
 
   double logdet;
@@ -1494,9 +1479,6 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     
     if(ord>2)
     {
-      four_der = four_der.array()*four_der.array()/(vws*vws);
-      sec_ord += 35*four_der.sum()/384;
-      
       gstar_extb_phi = gstar_extb_phi.array()/extbg;
       gstar = gstar_extb_phi.array()*(gamma*gamma*gamma-(11*gamma*gamma)*extb.array()+(11*gamma)*extbp-extbp*extb.array());
       for(int i=0;i<k_c;i++)
@@ -1505,7 +1487,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
       }
       four_der = gamma*four_der;
       temp_der = four_der.array()*third_der.array()/(vws*vws);
-      sec_ord += 7*temp_der.sum()/96;
+      sec_ord += 7*temp_der.sum()/48;
     }
     
   }

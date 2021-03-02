@@ -20,7 +20,7 @@ pml_ll_der2 = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,
 }
 
 
-pql_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,ord,vinit,intcol)
+pql_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,ord,intcol)
 {
   exps = exp(para[1])
   alpha = 1/(exps-1)
@@ -28,18 +28,19 @@ pql_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,
   lambda = 1/(sqrt(exps)*(exps-1))
   
   betas[intcol] = betas[intcol] - para[1]/2
-
   repml = opt_pml(X,offset,Y,fid-1,as.double(cumsumy),posind-1,posindy,nb,nind,k,betas,para,reml,eps,ord)
   if(repml$second < (-1))
   {stop()}
+  
+  loglik_temp = ifelse(is.nan(repml$loglik),repml$loglikp,repml$loglik)
 
-  loglik = repml$loglik + nind*gamma*log(gamma) + k*alpha*log(lambda) - k*Lgamma(alpha)
+  loglik = loglik_temp + nind*gamma*log(gamma) + k*alpha*log(lambda) - k*Lgamma(alpha)
   loglik = loglik + (sum(Lgamma(ytwo+gamma))-(length(posindy)-sum(n_one))*Lgamma(gamma) + sum(n_one)*log(gamma)+ n_one[2]*log(gamma+1))
   loglik = loglik - 0.5*repml$logdet + log(1+repml$second)
   -loglik
 }
 
-pql_gamma_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,gamma,ord,vinit,intcol)
+pql_gamma_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,gamma,ord,intcol)
 {
   exps = exp(para[1])
   alpha = 1/(exps-1)
@@ -50,14 +51,16 @@ pql_gamma_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb
   repml = opt_pml(X,offset,Y,fid-1,as.double(cumsumy),posind-1,posindy,nb,nind,k,betas,c(para[1],gamma),reml,eps,ord)
   if(repml$second < (-1))
   {stop()}
+  
+  loglik_temp = ifelse(is.nan(repml$loglik),repml$loglikp,repml$loglik)
 
-  loglik = repml$loglik + nind*gamma*log(gamma) + k*alpha*log(lambda) - k*Lgamma(alpha)
+  loglik = loglik_temp + nind*gamma*log(gamma) + k*alpha*log(lambda) - k*Lgamma(alpha)
   loglik = loglik + (sum(Lgamma(ytwo+gamma))-(length(posindy)-sum(n_one))*Lgamma(gamma) + sum(n_one)*log(gamma)+ n_one[2]*log(gamma+1))
   loglik = loglik - 0.5*repml$logdet + log(1+repml$second)
   -loglik
 }
 
-pql_nbm_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,ord,vinit,intcol)
+pql_nbm_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,ord,intcol)
 {
   alpha = para[1]
   gamma = para[2]
@@ -71,7 +74,7 @@ pql_nbm_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,n
 
 }
 
-pql_nbm_gamma_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,gamma,ord,vinit,intcol)
+pql_nbm_gamma_ll = function(para,X,offset,Y,n_one,ytwo,fid,cumsumy,posind,posindy,nb,nind,k,betas,reml,eps,gamma,ord,intcol)
 {
   alpha = para[1]
   
