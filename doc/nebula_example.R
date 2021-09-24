@@ -63,7 +63,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
-cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
 cov
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
@@ -75,7 +75,7 @@ re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
-cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
 ## build the contrast vector
 contrast = c(0,1,-1,0)
 ## testing the hypothesis

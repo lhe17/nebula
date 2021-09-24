@@ -794,13 +794,13 @@ re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
-cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
 cov
-#&gt;               [,1]          [,2]          [,3]          [,4]
-#&gt; [1,]  4.014261e-03  2.499051e-05  1.384999e-04  9.212341e-06
-#&gt; [2,]  2.499051e-05  1.249382e-03 -5.197643e-05 -1.167080e-05
-#&gt; [3,]  1.384999e-04  9.212341e-06  4.159507e-03  5.142249e-05
-#&gt; [4,] -5.197643e-05 -1.167080e-05  5.142249e-05  4.732936e-03</code></pre>
+#&gt;               [,1]          [,2]         [,3]          [,4]
+#&gt; [1,]  4.014261e-03  2.499051e-05 1.384999e-04 -5.197643e-05
+#&gt; [2,]  2.499051e-05  1.249382e-03 9.212341e-06 -1.167080e-05
+#&gt; [3,]  1.384999e-04  9.212341e-06 4.159507e-03  5.142249e-05
+#&gt; [4,] -5.197643e-05 -1.167080e-05 5.142249e-05  4.732936e-03</code></pre>
 <p>Note that if there are <em>K</em> variables, the covariance table in the output will have <em>(K+1)K/2</em> columns. So, for a large <em>K</em>, substantial increase of computational intensity should be expected.</p>
 <p>The second step is to build the contrast vector for your hypothesis. In this example, we want to test whether the log(FC) of <em>X1</em> and <em>cccontrol</em> are equal for the first gene. This hypothesis leads to the contrast vector <code>(0 1 -1 0)</code>. Thus, the test can be performed using the following code.</p>
 <pre class="r"><code>df = model.matrix(~X1+X2+cc, data=sample_data$pred)
@@ -813,7 +813,7 @@ re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
-cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
 ## build the contrast vector
 contrast = c(0,1,-1,0)
 ## testing the hypothesis
@@ -821,7 +821,7 @@ eff = sum(contrast*re_ln$summary[gene_i,1:4])
 p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
 p
 #&gt;           [,1]
-#&gt; [1,] 0.2719631</code></pre>
+#&gt; [1,] 0.2692591</code></pre>
 </div>
 </div>
 
