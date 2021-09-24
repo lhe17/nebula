@@ -17,7 +17,8 @@ nebula(
   kappa = 800,
   opt = "lbfgs",
   verbose = TRUE,
-  cpc = 0.005
+  cpc = 0.005,
+  covariance = FALSE
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ nebula(
 \item{verbose}{An optional logical scalar indicating whether to print additional messages. Default is FALSE.}
 
 \item{cpc}{A non-negative threshold for filtering low-expressed genes. Genes with counts per cell smaller than the specified value will not be analyzed.}
+
+\item{covariance}{If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.}
 }
 \value{
 summary: The estimated coefficient, standard erro and p-value for each predictor.

@@ -6,6 +6,7 @@ output:
   html_document:
     toc: yes
   md_document:
+    toc: yes
     variant: markdown_github
 vignette: >
   %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data}
@@ -20,13 +21,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.1.7
+# NEBULA v1.1.8
 
 ## Overview
 
 The R package, *nebula*, provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differentail expression, and performing cell-level co-expression analysis. 
 
-More details can be found in the manuscript "NEBULA: a fast negative binomial mixed model for differential expression and co-expression analyses of large-scale multi-subject single-cell data" (https://doi.org/10.1101/2020.09.24.311662).
+More details can be found in the manuscript "NEBULA: a fast negative binomial mixed model for differential expression and co-expression analyses of large-scale multi-subject single-cell data" (https://www.nature.com/articles/s42003-021-02146-6).
 
 ## Installation
 
@@ -86,12 +87,12 @@ head(sample_data$pred)
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 ```
-The association analysis between the gene expression and the predictors can then be conducted using the function *nebula*. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells.
+The association analysis between the gene expression and the predictors can then be conducted using the function ```nebula```. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells.
 ```{r,echo=TRUE}
 re = nebula(sample_data$count,sample_data$sid,pred=df)
 re
 ```
-The function by default fitted the negative binomial gamma mixed model (NBGMM) for each of the genes, and return a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The cells need to be grouped by the subjects before using as the input to the *nebula* function. If the cells are not grouped, the *group_cell* function can be used to first reorder the cells. If the cells are already grouped, the *group_cell* function will return NULL.
+The function by default fitted the negative binomial gamma mixed model (NBGMM) for each of the genes, and return a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The cells need to be grouped by the subjects (that is, the cells of the same subject should be placed consecutively) before using as the input to the ```nebula``` function. If the cells are not grouped, the ```group_cell``` function can be used to first reorder the cells, as shwon below. If a scaling factor is specified by the user, it should also be included in ```group_cell```. If the cells are already grouped, ```group_cell``` will return *NULL*.
 
 ### Example
 ```{r,eval=FALSE,echo=TRUE}
@@ -102,7 +103,7 @@ If ```pred``` is not specified, ```nebula``` will fit the model with an intecept
 
 ## Specifying scaling factors
 
-The scaling factor for each cell is specified in ```nebula``` using the argument ```offset```. The argument ```offset``` has to be a positive vector of length *N*. Note that log(offset) will be the offset in the NBMM. If not specified, ```nebula``` will set ```offset``` as 1 by default, which means that each cell is treated equally. Common scaling factors include the library size of a cell or a normalizing factor adjusted using e.g., TMM.
+The scaling factor for each cell is specified in ```nebula``` using the argument ```offset```. The argument ```offset``` has to be a positive vector of length *N*. Note that log(```offset```) will be the offset term in the NBMM. If not specified, ```nebula``` will set ```offset``` as 1 by default, which means that each cell is treated equally. Common scaling factors include the library size of a cell or a normalizing factor adjusted using e.g., TMM.
 
 ### Example
 ```{r,eval=FALSE,echo=TRUE}
@@ -124,7 +125,7 @@ Such difference has little impact on testing fixed-effects predictors under this
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 ```
-The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the CPS value becomes lower or the gene expression is more sparse. If the CPS value is <30, *nebula* will set ```method='HL'``` regardless of the user's input. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. 
+The bias of NEBULA-LN in estimating the cell-level overdispersion gets larger when the CPS value becomes lower or the gene expression is more sparse. If the CPS value is <30, ```nebula``` will set ```method='HL'``` regardless of the user's input. In contrast, NEBULA-HL is slower, but its accuracy of estimating the overdispersions depends less on these factors. 
 
 When NEBULA-LN is used, the user can opt for better accuracy of estimating a smaller subject-level overdispersion through the argument $\kappa$. NEBULA first fits the data using NEBULA-LN. If the estimated $\kappa$ for a gene is smaller than the user-defined value, NEBULA-HL will be used to estimate the subject-level overdispersion for the gene. The default value of $\kappa$ is 800, which can provide a good estimate of the subject-level overdispersion as low as ~0.005. Our simulation results suggest that $\kappa=200$ is often sufficent for achieving a well controlled false positive rate of testing a cell-level predictor. We do not recommend using a smaller $\kappa$ than 200. Specifying a larger $\kappa$ can obtain a more accurate estimate of a smaller subject-level overdispersion when the cell-level overdispersion is large, but will be computationally slower. On the other hand, testing a subject-level predictor (i.e., a variable whose values are shared across all cells from a subject, such as age, sex, treatment, genotype, etc) is more sensitive to the accuracy of the estimated subject-level overdispersion. So we recommend using $\kappa=800$ (as default) or even larger when testing a subject-level predictor. Another option to testing a subject-level predictor is to use a Poisson gamma mixed model, which is extremely fast (>50x faster than NEBULA-LN) and will be described below.
 
@@ -133,12 +134,12 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
 
 ## Checking convergence for the summary statistics
 
-*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. If the convergence code is -30, which indicates a failure of convergence, their summary statistics should not be used. If the convergence code is -20, it indicates that the optimization algorithm stops at the maximum step limit before the convergence. The results should be interpreted with caution in this case. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions, in which case the likelihood is flat and the optimization is sensitive to the initial values.   
+*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code <= -20 suggests that the algorithm does not converge well. If the convergence code is -30, which indicates a failure of convergence, their summary statistics should NOT be used. If the convergence code is -20 or -40, it indicates that the optimization algorithm stops at the maximum step limit before the complete convergence. The results should be interpreted with caution in this case. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions, in which case the likelihood is flat or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) may solve the problem. 
 
 
 ## Using other mixed models
 
-In addition to the NBGMM, the *nebula* package provides efficient estimation implementation for a Poisson gamma mixed model and a negative binomial lognormal mixed model (NGLMM). This can be specified through ```model="PMM"``` and ```model="NBLMM"```, respectively. The NBLMM is the same model as that adopted in the ```glmer.nb``` function in the *lme4* R package, but is computationally much more efficient by setting ```method='LN'```. The only difference between NBGMM and NBLMM is that NBGMM uses a gamma distribution for the random effects while the NBLMM uses a lognormal distribution. The PMM is the fastest among these models. Note that the Poisson mixed model (PMM) should not be used to test a cell-level predictor because it only estimates the subject-level overdispersion. Here is an example of using the PMM to fit the example data set.
+In addition to the NBGMM, the *nebula* package provides efficient estimation implementation for a Poisson gamma mixed model and a negative binomial lognormal mixed model (NBLMM). This can be specified through ```model="PMM"``` and ```model="NBLMM"```, respectively. The NBLMM is the same model as that adopted in the ```glmer.nb``` function in the *lme4* R package, but is computationally much more efficient by setting ```method='LN'```. The only difference between NBGMM and NBLMM is that NBGMM uses a gamma distribution for the random effects while the NBLMM uses a lognormal distribution. The PMM is the fastest among these models. Note that the Poisson mixed model (PMM) should not be used to test a cell-level predictor because it only estimates the subject-level overdispersion. Here is an example of using the PMM to fit the example data set.
 
 ### Example
 ```{r,eval=TRUE,echo=TRUE}
@@ -148,3 +149,39 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 knitr::kable(re$summary)
 ```
  
+## Testing contrasts
+
+In some situations, a user may want to test a combination (contrast) of the log(FC) or perform a global test for multiple variables or levels. For example, a user may want to test whether the log(FC) of two variables are the same. Here, we show how ```nebula``` can be used for this kind of analysis.
+
+The first step is to tell ```nebula``` to output the covariance matrix of the estimated log(FC). This can be done by specifying ```covariance=TRUE``` in ```nebula```. To save storage, the covariance returned by ```nebula``` only contains the elements in the lower triangular part including the diagonal. Here is an example to recover the covariance matrix from the output of ```nebula```.
+```{r,eval=TRUE,echo=TRUE}
+df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+cov= matrix(NA,4,4)
+cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
+cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov
+```
+Note that if there are *K* variables, the covariance table in the output will have *(K+1)K/2* columns. So, for a large *K*, substantial increase of computational intensity should be expected.   
+
+The second step is to build the contrast vector for your hypothesis. In this example, we want to test whether the log(FC) of *X1* and *cccontrol* are equal for the first gene. This hypothesis leads to the contrast vector ```(0 1 -1 0)```. Thus, the test can be performed
+using the following code.
+
+```{r,eval=TRUE,echo=TRUE}
+df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+## the gene to test
+gene_i = 1
+## output covariance
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+## recover the covariance matrix
+cov= matrix(NA,4,4)
+cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
+cov[upper.tri(cov)] = cov[lower.tri(cov)]
+## build the contrast vector
+contrast = c(0,1,-1,0)
+## testing the hypothesis
+eff = sum(contrast*re_ln$summary[gene_i,1:4])
+p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
+p
+```
+

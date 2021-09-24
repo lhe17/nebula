@@ -1,4 +1,22 @@
-NEBULA v1.1.7
+-   [NEBULA v1.1.8](#nebula-v1.1.8)
+    -   [Overview](#overview)
+    -   [Installation](#installation)
+        -   [Most recent version](#most-recent-version)
+    -   [Functions](#functions)
+    -   [Basic usage](#basic-usage)
+        -   [Example](#example)
+    -   [Specifying scaling factors](#specifying-scaling-factors)
+        -   [Example](#example-1)
+    -   [Selection between NEBULA-LN and
+        NEBULA-HL](#selection-between-nebula-ln-and-nebula-hl)
+    -   [Filtering low-expressed genes](#filtering-low-expressed-genes)
+    -   [Checking convergence for the summary
+        statistics](#checking-convergence-for-the-summary-statistics)
+    -   [Using other mixed models](#using-other-mixed-models)
+        -   [Example](#example-2)
+    -   [Testing contrasts](#testing-contrasts)
+
+NEBULA v1.1.8
 =============
 
 Overview
@@ -17,7 +35,7 @@ co-expression analysis.
 More details can be found in the manuscript “NEBULA: a fast negative
 binomial mixed model for differential expression and co-expression
 analyses of large-scale multi-subject single-cell data”
-(<a href="https://doi.org/10.1101/2020.09.24.311662" class="uri">https://doi.org/10.1101/2020.09.24.311662</a>).
+(<a href="https://www.nature.com/articles/s42003-021-02146-6" class="uri">https://www.nature.com/articles/s42003-021-02146-6</a>).
 
 Installation
 ------------
@@ -131,7 +149,7 @@ head(df)
 ```
 
 The association analysis between the gene expression and the predictors
-can then be conducted using the function *nebula*. The count matrix is
+can then be conducted using the function `nebula`. The count matrix is
 an *M* by *N* matrix, where *M* is the number of genes, and *N* is the
 number of cells.
 
@@ -194,16 +212,22 @@ re
 #> $algorithm
 #>  [1] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
 #>  [6] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
+#> 
+#> $covariance
+#> NULL
 ```
 
 The function by default fitted the negative binomial gamma mixed model
 (NBGMM) for each of the genes, and return a list of summary statistics
 including the fold change, p-values, and both subject-level and
 cell-level overdispersions (*σ*<sup>2</sup> and *ϕ*<sup> − 1</sup>). The
-cells need to be grouped by the subjects before using as the input to
-the *nebula* function. If the cells are not grouped, the *group\_cell*
-function can be used to first reorder the cells. If the cells are
-already grouped, the *group\_cell* function will return NULL.
+cells need to be grouped by the subjects (that is, the cells of the same
+subject should be placed consecutively) before using as the input to the
+`nebula` function. If the cells are not grouped, the `group_cell`
+function can be used to first reorder the cells, as shwon below. If a
+scaling factor is specified by the user, it should also be included in
+`group_cell`. If the cells are already grouped, `group_cell` will return
+*NULL*.
 
 ### Example
 
@@ -221,10 +245,11 @@ Specifying scaling factors
 
 The scaling factor for each cell is specified in `nebula` using the
 argument `offset`. The argument `offset` has to be a positive vector of
-length *N*. Note that log(offset) will be the offset in the NBMM. If not
-specified, `nebula` will set `offset` as 1 by default, which means that
-each cell is treated equally. Common scaling factors include the library
-size of a cell or a normalizing factor adjusted using e.g., TMM.
+length *N*. Note that log(`offset`) will be the offset term in the NBMM.
+If not specified, `nebula` will set `offset` as 1 by default, which
+means that each cell is treated equally. Common scaling factors include
+the library size of a cell or a normalizing factor adjusted using e.g.,
+TMM.
 
 ### Example
 
@@ -254,16 +279,16 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432321 0.9284703 0.08125256 0.8840821
-#> 2  0.07455464 0.9726512 0.07102681 0.9255032
-#> 3  0.17403276 0.9817570 0.17159404 0.9266395
-#> 4  0.05352148 0.8516682 0.05026165 0.8124118
-#> 5  0.07480033 1.3254379 0.07075366 1.2674146
+#> 1  0.08432326 0.9284701 0.08125256 0.8840821
+#> 2  0.07455465 0.9726512 0.07102681 0.9255032
+#> 3  0.17403264 0.9817571 0.17159404 0.9266395
+#> 4  0.05352150 0.8516682 0.05026165 0.8124118
+#> 5  0.07480034 1.3254379 0.07075366 1.2674146
 #> 6  0.12372426 1.1653128 0.12086392 1.1096065
-#> 7  0.07724824 0.9578169 0.07360445 0.9112956
-#> 8  0.13797646 0.7991954 0.13571262 0.7549629
-#> 9  0.05879492 0.8568854 0.05541398 0.8139652
-#> 10 0.09782335 0.9940223 0.09496649 0.9410035
+#> 7  0.07724823 0.9578170 0.07360445 0.9112956
+#> 8  0.13797636 0.7991950 0.13571262 0.7549629
+#> 9  0.05879485 0.8568851 0.05541398 0.8139652
+#> 10 0.09782324 0.9940222 0.09496649 0.9410035
 ```
 
 Such difference has little impact on testing fixed-effects predictors
@@ -273,21 +298,21 @@ under this sample size.
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+#> 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
 #> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
+#> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
+#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
 #> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
+#> 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
+#> 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
+#> 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
+#> 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
 larger when the CPS value becomes lower or the gene expression is more
-sparse. If the CPS value is \<30, *nebula* will set `method='HL'`
+sparse. If the CPS value is \<30, `nebula` will set `method='HL'`
 regardless of the user’s input. In contrast, NEBULA-HL is slower, but
 its accuracy of estimating the overdispersions depends less on these
 factors.
@@ -333,22 +358,27 @@ Checking convergence for the summary statistics
 *nebula* reports convergence information about the estimation algorithm
 for each gene along with the summary statistics. This is useful and
 important information for quality control to filter out genes of which
-the estimation procedure potentially does not converge. If the
-convergence code is -30, which indicates a failure of convergence, their
-summary statistics should not be used. If the convergence code is -20,
-it indicates that the optimization algorithm stops at the maximum step
-limit before the convergence. The results should be interpreted with
-caution in this case. The failure of convergence may occur when the
-sample size is very small, there are too few positive counts, or the
-gene has huge overdispersions, in which case the likelihood is flat and
-the optimization is sensitive to the initial values.
+the estimation procedure potentially does not converge. Generally, a
+convergence code \<= -20 suggests that the algorithm does not converge
+well. If the convergence code is -30, which indicates a failure of
+convergence, their summary statistics should NOT be used. If the
+convergence code is -20 or -40, it indicates that the optimization
+algorithm stops at the maximum step limit before the complete
+convergence. The results should be interpreted with caution in this
+case. The failure of convergence may occur when the sample size is very
+small, there are too few positive counts, or the gene has huge
+overdispersions, in which case the likelihood is flat or the
+optimization is sensitive to the initial values. For those genes that
+have a bad convergence code, in many cases, trying a different negative
+binomial mixed model (e.g., NBLMM, see below for more details) may solve
+the problem.
 
 Using other mixed models
 ------------------------
 
 In addition to the NBGMM, the *nebula* package provides efficient
 estimation implementation for a Poisson gamma mixed model and a negative
-binomial lognormal mixed model (NGLMM). This can be specified through
+binomial lognormal mixed model (NBLMM). This can be specified through
 `model="PMM"` and `model="NBLMM"`, respectively. The NBLMM is the same
 model as that adopted in the `glmer.nb` function in the *lme4* R
 package, but is computationally much more efficient by setting
@@ -373,10 +403,74 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 |           -1.903571|  -0.0155809|  -0.0976660|         0.0511060|        0.0661297|  0.0329115|  0.0655553|      0.0642299|               0|  0.6359142|  0.1362700|     0.4262222|         1| A    |
 |           -2.047864|  -0.0032670|  -0.0536887|        -0.0189269|        0.0644332|  0.0355074|  0.0635450|      0.0694853|               0|  0.9266904|  0.3981703|     0.7853239|         2| B    |
 |           -2.032645|   0.0179777|   0.0009387|        -0.0505390|        0.0908196|  0.0345496|  0.0932449|      0.0676706|               0|  0.6028248|  0.9919678|     0.4551611|         3| C    |
-|           -2.009746|  -0.0054963|  -0.0278602|         0.0782074|        0.0573209|  0.0350745|  0.0574459|      0.0686939|               0|  0.8754792|  0.6276888|     0.2549156|         4| D    |
+|           -2.009746|  -0.0054963|  -0.0278602|         0.0782074|        0.0573209|  0.0350745|  0.0574459|      0.0686939|               0|  0.8754792|  0.6276889|     0.2549156|         4| D    |
 |           -1.980528|   0.0106338|  -0.0248791|         0.0312190|        0.0644287|  0.0343355|  0.0621576|      0.0671645|               0|  0.7567865|  0.6889656|     0.6420644|         5| E    |
 |           -1.950451|   0.0160341|  -0.0134775|        -0.0345244|        0.0778198|  0.0333858|  0.0738508|      0.0650410|               0|  0.6310363|  0.8551928|     0.5955505|         6| F    |
 |           -1.970271|  -0.0026753|   0.0750060|        -0.0063677|        0.0645989|  0.0341936|  0.0615160|      0.0668723|               0|  0.9376369|  0.2227329|     0.9241391|         7| G    |
-|           -1.964311|   0.0141532|  -0.0610984|        -0.0578672|        0.0809943|  0.0336579|  0.0800990|      0.0656800|               0|  0.6741201|  0.4455910|     0.3782927|         8| H    |
+|           -1.964311|   0.0141532|  -0.0610984|        -0.0578672|        0.0809943|  0.0336579|  0.0800990|      0.0656800|               0|  0.6741202|  0.4455910|     0.3782927|         8| H    |
 |           -2.074031|  -0.0178190|  -0.0436094|         0.0259745|        0.0597947|  0.0362203|  0.0587679|      0.0707912|               0|  0.6227459|  0.4580494|     0.7136813|         9| I    |
 |           -2.046055|   0.0307026|   0.0227238|        -0.0246112|        0.0714158|  0.0354844|  0.0702268|      0.0691813|               0|  0.3869068|  0.7462578|     0.7220276|        10| J    |
+
+Testing contrasts
+-----------------
+
+In some situations, a user may want to test a combination (contrast) of
+the log(FC) or perform a global test for multiple variables or levels.
+For example, a user may want to test whether the log(FC) of two
+variables are the same. Here, we show how `nebula` can be used for this
+kind of analysis.
+
+The first step is to tell `nebula` to output the covariance matrix of
+the estimated log(FC). This can be done by specifying `covariance=TRUE`
+in `nebula`. To save storage, the covariance returned by `nebula` only
+contains the elements in the lower triangular part including the
+diagonal. Here is an example to recover the covariance matrix from the
+output of `nebula`.
+
+``` r
+df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+#> Remove  0  genes having low expression.
+#> Analyzing  10  genes with  30  subjects and  6176  cells.
+cov= matrix(NA,4,4)
+cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
+cov[upper.tri(cov)] = cov[lower.tri(cov)]
+cov
+#>               [,1]          [,2]          [,3]          [,4]
+#> [1,]  4.014261e-03  2.499051e-05  1.384999e-04  9.212341e-06
+#> [2,]  2.499051e-05  1.249382e-03 -5.197643e-05 -1.167080e-05
+#> [3,]  1.384999e-04  9.212341e-06  4.159507e-03  5.142249e-05
+#> [4,] -5.197643e-05 -1.167080e-05  5.142249e-05  4.732936e-03
+```
+
+Note that if there are *K* variables, the covariance table in the output
+will have *(K+1)K/2* columns. So, for a large *K*, substantial increase
+of computational intensity should be expected.
+
+The second step is to build the contrast vector for your hypothesis. In
+this example, we want to test whether the log(FC) of *X1* and
+*cccontrol* are equal for the first gene. This hypothesis leads to the
+contrast vector `(0 1 -1 0)`. Thus, the test can be performed using the
+following code.
+
+``` r
+df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+## the gene to test
+gene_i = 1
+## output covariance
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+#> Remove  0  genes having low expression.
+#> Analyzing  10  genes with  30  subjects and  6176  cells.
+## recover the covariance matrix
+cov= matrix(NA,4,4)
+cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
+cov[upper.tri(cov)] = cov[lower.tri(cov)]
+## build the contrast vector
+contrast = c(0,1,-1,0)
+## testing the hypothesis
+eff = sum(contrast*re_ln$summary[gene_i,1:4])
+p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
+p
+#>           [,1]
+#> [1,] 0.2719631
+```

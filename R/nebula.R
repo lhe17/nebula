@@ -14,6 +14,7 @@
 #' @param cutoff_cell The data will be refit using NEBULA-HL to estimate both overdispersions if the product of the cells per subject and the estimated cell-level overdispersion paremeter \eqn{\phi} is smaller than cutoff_cell. The default is 20.
 #' @param opt 'lbfgs' or 'trust'. Specifying the optimization algorithm used in NEBULA-LN. The default is 'lbfgs'. If it is 'trust', a trust region algorithm based on the Hessian matrix wil be used for optimization.
 #' @param verbose An optional logical scalar indicating whether to print additional messages. Default is FALSE.
+#' @param covariance If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.
 #' @return summary: The estimated coefficient, standard erro and p-value for each predictor.
 #' @return overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 #' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.    
@@ -30,7 +31,8 @@
 
 
 nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max = c(10,1000), 
-                   model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',verbose = TRUE, cpc = 0.005)
+                   model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',
+                   verbose = TRUE, cpc = 0.005, covariance = FALSE)
 {
   reml = 0
   eps = 1e-06
@@ -46,6 +48,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   }
   count = as(count, "dgCMatrix")
   nind = ncol(count)
+  if(nind<2)
+  {stop("There is no more than one cell in the count matrix.")}
   gname = rownames(count)
   predn = sds = NULL
   intcol = NULL
@@ -273,11 +277,19 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         {
           conv = -20
         }else{
-          if(repml$damp>10)
-          {conv = -10}
+          if(repml$damp==11)
+          {conv = -10}else{
+            if(repml$damp==12)
+            {conv = -40}
+          }
         }
       }
-      c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
+      if(covariance==FALSE)
+      {
+        c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
+      }else{
+        c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit,repml$var[lower.tri(repml$var, diag = TRUE)])
+      }
     })
   }else {
     re = sapply(gid, function(x) {
@@ -297,8 +309,16 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       
       var_re = rep(NA, npar)
       nnaind = (!is.nan(diag(hes))) & (re_t$par != lower) & (re_t$par != upper)
-      var_re[nnaind] = diag(solve(-hes[nnaind, nnaind]))
-      c(re_t$par, var_re[1:nb],1,5)
+      covfix = solve(-hes[nnaind, nnaind])
+      var_re[nnaind] = diag(covfix)
+      if(covariance==FALSE)
+      {
+        c(re_t$par, var_re[1:nb],1,5)
+      }else{
+        tempv = matrix(NA,nb,nb)
+        tempv[nnaind, nnaind] = covfix
+        c(re_t$par, var_re[1:nb],1,5,tempv[lower.tri(tempv, diag = TRUE)])
+      }
     })
   }
   re_all = as.data.frame(t(re))
@@ -311,6 +331,13 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   
   re_all[, c(1:nb,npar+(1:nb))] = t(t(re_all[, c(1:nb,npar+(1:nb))])/c(sds,sds))
   
+  if(covariance==TRUE)
+  {
+    sdssc = sds%*%t(sds)
+    sdssc = sdssc[lower.tri(sdssc, diag = TRUE)]
+    re_all[, (npar+nb+3):ncol(re_all)] = t(t(re_all[, (npar+nb+3):ncol(re_all)])/sdssc)
+  }
+  
   re_all = cbind(re_all, matrix(p, ncol = nb))
   re_all$gene_id = gid
   re_all$gene = gname[gid]
@@ -321,13 +348,22 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   }else {
     indp = predn
   }
-  colnames(re_all)[1:(3 * nb + ntau+2)] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm",paste0("p_", indp))
+  
+  ncov = 0
+  if(covariance==FALSE)
+  {
+    colnames(re_all)[1:(3 * nb + ntau+2)] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm",paste0("p_", indp))
+  }else{
+    ncov = (nb+1)*nb/2
+    colnames(re_all)[1:(3 * nb + ntau+2+ncov)] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm",paste0("cov_", 1:ncov),paste0("p_", indp))
+  }
   
   algorithms = c('NBGMM (LN)','NBGMM (HL)','NBGMM (LN+HL)','NBLMM (HL)','PGMM','NBLMM (LN+HL)')
-  list(summary=re_all[, c(paste0("logFC_", indp), paste0("se_",indp), paste0("p_", indp), colnames(re_all)[(3*nb + ntau + 3):ncol(re_all)])],
-       overdispersion=re_all[, c(rl[1:ntau])],
-       convergence=re_all[,'convergence'],
-       algorithm=algorithms[re_all[,'algorithm']])
+  list(summary = re_all[, c(paste0("logFC_", indp), paste0("se_",indp), paste0("p_", indp), colnames(re_all)[(3*nb+ntau+3+ncov):ncol(re_all)])],
+       overdispersion = re_all[, c(rl[1:ntau])],
+       convergence = re_all[,'convergence'],
+       algorithm = algorithms[re_all[,'algorithm']],
+       covariance = if(covariance==FALSE){NULL}else{re_all[, paste0("cov_", 1:ncov)]})
   
 }
 
