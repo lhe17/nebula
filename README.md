@@ -448,10 +448,9 @@ will have *(K+1)K/2* columns. So, for a large *K*, substantial increase
 of computational intensity should be expected.
 
 The second step is to build the contrast vector for your hypothesis. In
-this example, we want to test whether the log(FC) of *X1* and
-*cccontrol* are equal for the first gene. This hypothesis leads to the
-contrast vector `(0 1 -1 0)`. Thus, the test can be performed using the
-following code.
+this example, we want to test whether the log(FC) of *X1* and *X2* are
+equal for the first gene. This hypothesis leads to the contrast vector
+`(0 1 -1 0)`. Thus, the test can be performed using the following code.
 
 ``` r
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
