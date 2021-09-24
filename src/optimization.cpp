@@ -1279,7 +1279,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
   int stepd = 0;
   int maxstd = 10;
   int maxstep = 50;
-  double convd = 0.001;
+  double convd = 0.01;
 
   //while((step==0)||(likdif>abs(eps*loglik)))
   while((step==0)||((likdif>eps)&&(step<maxstep)))
