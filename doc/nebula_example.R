@@ -9,9 +9,6 @@ knitr::opts_chunk$set(
 #  library(devtools)
 #  install_github("lhe17/nebula")
 
-## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("nebula", repos="http://R-Forge.R-project.org")
-
 ## ----echo=TRUE----------------------------------------------------------------
 library(nebula)
 data(sample_data)
@@ -82,4 +79,8 @@ contrast = c(0,1,-1,0)
 eff = sum(contrast*re_ln$summary[gene_i,1:4])
 p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
 p
+
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
+#  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+#  pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset)
 

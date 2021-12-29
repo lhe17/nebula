@@ -1,22 +1,4 @@
--   [NEBULA v1.1.8](#nebula-v1.1.8)
-    -   [Overview](#overview)
-    -   [Installation](#installation)
-        -   [Most recent version](#most-recent-version)
-    -   [Functions](#functions)
-    -   [Basic usage](#basic-usage)
-        -   [Example](#example)
-    -   [Specifying scaling factors](#specifying-scaling-factors)
-        -   [Example](#example-1)
-    -   [Selection between NEBULA-LN and
-        NEBULA-HL](#selection-between-nebula-ln-and-nebula-hl)
-    -   [Filtering low-expressed genes](#filtering-low-expressed-genes)
-    -   [Checking convergence for the summary
-        statistics](#checking-convergence-for-the-summary-statistics)
-    -   [Using other mixed models](#using-other-mixed-models)
-        -   [Example](#example-2)
-    -   [Testing contrasts](#testing-contrasts)
-
-NEBULA v1.1.8
+NEBULA v1.2.0
 =============
 
 Overview
@@ -29,8 +11,8 @@ hierarchical structure of the data by decomposing the total
 overdispersion into between-subject and within-subject components using
 a negative binomial mixed model (NBMM). The package nebula can be used
 for e.g., identifying marker genes, testing treatment effects, detecting
-genes with differentail expression, and performing cell-level
-co-expression analysis.
+genes with differential expression, performing cell-level co-expression
+analysis, and obtaining Pearson residuals for downstream analyses.
 
 More details can be found in the manuscript “NEBULA: a fast negative
 binomial mixed model for differential expression and co-expression
@@ -42,7 +24,7 @@ Installation
 
 ### Most recent version
 
-To install the lastest version from github:
+To install the latest version from github:
 
 ``` r
 install.packages("devtools")
@@ -50,17 +32,13 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
-To install the lastest version from R-forge:
-
-``` r
-install.packages("nebula", repos="http://R-Forge.R-project.org")
-```
-
 Because the package *nebula* uses the R package *Rfast*, the
 installation process may first install *Rfast*, which requires that GSL
-is installed or available in the environment.
+is installed or available in the environment. The installation also
+requires Rcpp-1.0.7 and has been tested on R-4.1.0. Starting from this
+version, *nebula* does not support R-3.6 or an older version of R.
 
-The installation has been tested on R-3.6 and R-3.5. Please contact
+Please contact
 <a href="mailto:liang.he@duke.edu" class="email">liang.he@duke.edu</a>
 for more information.
 
@@ -72,6 +50,7 @@ The current version provides the following functions.
 -   `nebula`: performs an association analysis using NBMMs given a count
     matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
+-   `nbresidual`: extracts Pearson residuals from the fitted model.
 
 Basic usage
 -----------
@@ -82,6 +61,7 @@ set attached to the R package can be loaded as follows.
 
 ``` r
 library(nebula)
+#> Warning: package 'nebula' was built under R version 4.1.2
 data(sample_data)
 ```
 
@@ -244,12 +224,16 @@ Specifying scaling factors
 --------------------------
 
 The scaling factor for each cell is specified in `nebula` using the
-argument `offset`. The argument `offset` has to be a positive vector of
-length *N*. Note that log(`offset`) will be the offset term in the NBMM.
-If not specified, `nebula` will set `offset` as 1 by default, which
-means that each cell is treated equally. Common scaling factors include
-the library size of a cell or a normalizing factor adjusted using e.g.,
-TMM.
+argument `offset`. The argument `offset` has to be a vector of length
+*N* containing positive values. Note that log(`offset`) will be the
+offset term in the NBMM. Common scaling factors can be the library size
+of a cell or a normalizing factor adjusted using e.g., TMM. If not
+specified, `nebula` will set `offset` as one by default, which means
+that each cell is treated equally. If the input count matrix is already
+normalized by another tool, e.g., scTransform, then you should not
+specify `offset`. However, since `nebula` directly models the raw
+counts, it is not recommended to use a normalized count matrix for
+`nebula`.
 
 ### Example
 
@@ -257,17 +241,22 @@ TMM.
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
 ```
 
-Selection between NEBULA-LN and NEBULA-HL
------------------------------------------
+Difference between NEBULA-LN and NEBULA-HL
+------------------------------------------
 
-In *nebula*, a user can choose one of the two algorithms to fit an NBMM.
-NEBULA-LN uses an approximated likelihood based on the law of large
-numbers, and NEBULA-HL uses an h-likelihood. A user can select these
-methods through `method='LN'` or `method='HL'`. NEBULA-LN is faster and
-performs particularly well when the number of cells per subject (CPS) is
-large. In the following analysis of the example data set comprising
-\~200 cells per subject, the difference of the estimated cell-level
-overdispersions between NEBULA-LN and NEBULA-HL is \~5% for most genes.
+In *nebula*, a user can choose one of the two algorithms to fit an
+NBGMM. NEBULA-LN uses an approximated likelihood based on the law of
+large numbers, and NEBULA-HL uses an h-likelihood. A user can select
+these methods through `method='LN'` or `method='HL'`. NEBULA-LN is
+faster and performs particularly well when the number of cells per
+subject (CPS) is large. In addition, NEBULA-LN is much more accurate in
+estimating a very large subject-level overdispersion. In contrast,
+NEBULA-HL is slower but more accurate in estimating the cell-level
+overdispersion.
+
+In the following analysis of the example data set comprising \~200 cells
+per subject, the difference of the estimated cell-level overdispersions
+between NEBULA-LN and NEBULA-HL is \~5% for most genes.
 
 ``` r
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
@@ -279,16 +268,16 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432321 0.9284703 0.08125256 0.8840821
-#> 2  0.07455464 0.9726512 0.07102681 0.9255032
-#> 3  0.17403276 0.9817570 0.17159404 0.9266395
-#> 4  0.05352148 0.8516682 0.05026165 0.8124118
-#> 5  0.07480033 1.3254379 0.07075366 1.2674146
+#> 1  0.08432326 0.9284701 0.08125256 0.8840821
+#> 2  0.07455465 0.9726512 0.07102681 0.9255032
+#> 3  0.17403264 0.9817571 0.17159404 0.9266395
+#> 4  0.05352150 0.8516682 0.05026165 0.8124118
+#> 5  0.07480034 1.3254379 0.07075366 1.2674146
 #> 6  0.12372426 1.1653128 0.12086392 1.1096065
-#> 7  0.07724824 0.9578169 0.07360445 0.9112956
-#> 8  0.13797646 0.7991954 0.13571262 0.7549629
-#> 9  0.05879492 0.8568854 0.05541398 0.8139652
-#> 10 0.09782335 0.9940223 0.09496649 0.9410035
+#> 7  0.07724823 0.9578170 0.07360445 0.9112956
+#> 8  0.13797636 0.7991950 0.13571262 0.7549629
+#> 9  0.05879485 0.8568851 0.05541398 0.8139652
+#> 10 0.09782324 0.9940222 0.09496649 0.9410035
 ```
 
 Such difference has little impact on testing fixed-effects predictors
@@ -298,24 +287,22 @@ under this sample size.
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+#> 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
 #> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
+#> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
+#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
 #> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
+#> 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
+#> 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
+#> 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
+#> 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
 larger when the CPS value becomes lower or the gene expression is more
 sparse. If the CPS value is \<30, `nebula` will set `method='HL'`
-regardless of the user’s input. In contrast, NEBULA-HL is slower, but
-its accuracy of estimating the overdispersions depends less on these
-factors.
+regardless of the user’s input.
 
 When NEBULA-LN is used, the user can opt for better accuracy of
 estimating a smaller subject-level overdispersion through the argument
@@ -338,8 +325,8 @@ a subject-level predictor. Another option to testing a subject-level
 predictor is to use a Poisson gamma mixed model, which is extremely fast
 (\>50x faster than NEBULA-LN) and will be described below.
 
-Filtering low-expressed genes
------------------------------
+Filtering low-expression genes
+------------------------------
 
 NEBULA-HL automatically uses a higher-order Laplace approximation for
 low-expressed genes of which the average count per subject is less than
@@ -352,14 +339,14 @@ low-expressed genes can be specified by `cpc=0.005` (i.e., counts per
 cell\<0.5%). The argument `cpc` is defined by the ratio between the
 total count of the gene and the number of cells.
 
-Checking convergence for the summary statistics
------------------------------------------------
+Checking convergence for the summary statistics and quality control
+-------------------------------------------------------------------
 
 *nebula* reports convergence information about the estimation algorithm
 for each gene along with the summary statistics. This is useful and
 important information for quality control to filter out genes of which
 the estimation procedure potentially does not converge. Generally, a
-convergence code \<= -20 suggests that the algorithm does not converge
+convergence code ≤ -20 suggests that the algorithm does not converge
 well. If the convergence code is -30, which indicates a failure of
 convergence, their summary statistics should NOT be used. If the
 convergence code is -20 or -40, it indicates that the optimization
@@ -372,6 +359,35 @@ optimization is sensitive to the initial values. For those genes that
 have a bad convergence code, in many cases, trying a different negative
 binomial mixed model (e.g., NBLMM, see below for more details) may solve
 the problem.
+
+Depending on the concrete application, the estimated gene-specific
+overdispersions can also be taken into consideration in quality control.
+For example, when testing differential expression for a variable, genes
+with a very large estimated cell-level overdispersion should be filtered
+out because such genes have huge unexplained noises. A large cell-level
+overdispersion is generally rare in UMI-based single cell data,
+especially among abundantly expressed genes, but more common in e.g.,
+SMART-seq2 as PCR duplicates introduce substantial noises. It might be
+hard to give a precise cut-off for a large overdispersion because it
+also depends on the sample size of the data. Based on the empirical
+simulation study in
+(<a href="https://www.nature.com/articles/s42003-021-02146-6" class="uri">https://www.nature.com/articles/s42003-021-02146-6</a>),
+genes with an estimated cell-level overdispersion \>100 should be
+removed for a data set with at least 50 cells per subject. On the other
+hand, if the purpose is to extract residuals for downstream analysis
+such as clustering, genes with a large cell-level overdispersion might
+be preferable because they have large variations.
+
+If the variable of interest is subject-level, genes with a very large
+subject-level overdispersion (\>1) should be removed or interpreted
+cautiously as well. In addition, at least a moderate number of subjects
+(\>30) are required for testing a subject-level variable using `nebula`
+simply because a small number of subjects are not enough to accurately
+estiamte the subject-level overdispersion. As shown in the original
+article, even 30 subjects lead to mild inflated type I errors in most
+simulated scenarios. If the number of subjects is small, methods
+accounting for small sample size (e.g., DESeq2, edgeR) should be used
+for testing subject-level variables.
 
 Using other mixed models
 ------------------------
@@ -398,18 +414,204 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
 ```
 
-|  logFC\_(Intercept)|   logFC\_X1|   logFC\_X2|  logFC\_cccontrol|  se\_(Intercept)|     se\_X1|     se\_X2|  se\_cccontrol|  p\_(Intercept)|      p\_X1|      p\_X2|  p\_cccontrol|  gene\_id| gene |
-|-------------------:|-----------:|-----------:|-----------------:|----------------:|----------:|----------:|--------------:|---------------:|----------:|----------:|-------------:|---------:|:-----|
-|           -1.903571|  -0.0155809|  -0.0976660|         0.0511060|        0.0661297|  0.0329115|  0.0655553|      0.0642299|               0|  0.6359142|  0.1362700|     0.4262222|         1| A    |
-|           -2.047864|  -0.0032670|  -0.0536887|        -0.0189269|        0.0644332|  0.0355074|  0.0635450|      0.0694853|               0|  0.9266904|  0.3981703|     0.7853239|         2| B    |
-|           -2.032645|   0.0179777|   0.0009387|        -0.0505390|        0.0908196|  0.0345496|  0.0932449|      0.0676706|               0|  0.6028248|  0.9919678|     0.4551611|         3| C    |
-|           -2.009746|  -0.0054963|  -0.0278602|         0.0782074|        0.0573209|  0.0350745|  0.0574459|      0.0686939|               0|  0.8754792|  0.6276888|     0.2549156|         4| D    |
-|           -1.980528|   0.0106338|  -0.0248791|         0.0312190|        0.0644287|  0.0343355|  0.0621576|      0.0671645|               0|  0.7567865|  0.6889656|     0.6420644|         5| E    |
-|           -1.950451|   0.0160341|  -0.0134775|        -0.0345244|        0.0778198|  0.0333858|  0.0738508|      0.0650410|               0|  0.6310363|  0.8551928|     0.5955505|         6| F    |
-|           -1.970271|  -0.0026753|   0.0750060|        -0.0063677|        0.0645989|  0.0341936|  0.0615160|      0.0668723|               0|  0.9376369|  0.2227329|     0.9241391|         7| G    |
-|           -1.964311|   0.0141532|  -0.0610984|        -0.0578672|        0.0809943|  0.0336579|  0.0800990|      0.0656800|               0|  0.6741201|  0.4455910|     0.3782927|         8| H    |
-|           -2.074031|  -0.0178190|  -0.0436094|         0.0259745|        0.0597947|  0.0362203|  0.0587679|      0.0707912|               0|  0.6227459|  0.4580494|     0.7136813|         9| I    |
-|           -2.046055|   0.0307026|   0.0227238|        -0.0246112|        0.0714158|  0.0354844|  0.0702268|      0.0691813|               0|  0.3869068|  0.7462578|     0.7220276|        10| J    |
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
+<col style="width: 8%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
+<col style="width: 4%" />
+<col style="width: 3%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">logFC_(Intercept)</th>
+<th style="text-align: right;">logFC_X1</th>
+<th style="text-align: right;">logFC_X2</th>
+<th style="text-align: right;">logFC_cccontrol</th>
+<th style="text-align: right;">se_(Intercept)</th>
+<th style="text-align: right;">se_X1</th>
+<th style="text-align: right;">se_X2</th>
+<th style="text-align: right;">se_cccontrol</th>
+<th style="text-align: right;">p_(Intercept)</th>
+<th style="text-align: right;">p_X1</th>
+<th style="text-align: right;">p_X2</th>
+<th style="text-align: right;">p_cccontrol</th>
+<th style="text-align: right;">gene_id</th>
+<th style="text-align: left;">gene</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">-1.903571</td>
+<td style="text-align: right;">-0.0155809</td>
+<td style="text-align: right;">-0.0976660</td>
+<td style="text-align: right;">0.0511060</td>
+<td style="text-align: right;">0.0661297</td>
+<td style="text-align: right;">0.0329115</td>
+<td style="text-align: right;">0.0655553</td>
+<td style="text-align: right;">0.0642299</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6359142</td>
+<td style="text-align: right;">0.1362700</td>
+<td style="text-align: right;">0.4262222</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">A</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.047864</td>
+<td style="text-align: right;">-0.0032670</td>
+<td style="text-align: right;">-0.0536887</td>
+<td style="text-align: right;">-0.0189269</td>
+<td style="text-align: right;">0.0644332</td>
+<td style="text-align: right;">0.0355074</td>
+<td style="text-align: right;">0.0635450</td>
+<td style="text-align: right;">0.0694853</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.9266904</td>
+<td style="text-align: right;">0.3981703</td>
+<td style="text-align: right;">0.7853239</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-2.032645</td>
+<td style="text-align: right;">0.0179777</td>
+<td style="text-align: right;">0.0009387</td>
+<td style="text-align: right;">-0.0505390</td>
+<td style="text-align: right;">0.0908196</td>
+<td style="text-align: right;">0.0345496</td>
+<td style="text-align: right;">0.0932449</td>
+<td style="text-align: right;">0.0676706</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6028248</td>
+<td style="text-align: right;">0.9919678</td>
+<td style="text-align: right;">0.4551611</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">C</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.009746</td>
+<td style="text-align: right;">-0.0054963</td>
+<td style="text-align: right;">-0.0278602</td>
+<td style="text-align: right;">0.0782074</td>
+<td style="text-align: right;">0.0573209</td>
+<td style="text-align: right;">0.0350745</td>
+<td style="text-align: right;">0.0574459</td>
+<td style="text-align: right;">0.0686939</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.8754792</td>
+<td style="text-align: right;">0.6276889</td>
+<td style="text-align: right;">0.2549156</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">D</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.980528</td>
+<td style="text-align: right;">0.0106338</td>
+<td style="text-align: right;">-0.0248791</td>
+<td style="text-align: right;">0.0312190</td>
+<td style="text-align: right;">0.0644287</td>
+<td style="text-align: right;">0.0343355</td>
+<td style="text-align: right;">0.0621576</td>
+<td style="text-align: right;">0.0671645</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.7567865</td>
+<td style="text-align: right;">0.6889656</td>
+<td style="text-align: right;">0.6420644</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">E</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.950451</td>
+<td style="text-align: right;">0.0160341</td>
+<td style="text-align: right;">-0.0134775</td>
+<td style="text-align: right;">-0.0345244</td>
+<td style="text-align: right;">0.0778198</td>
+<td style="text-align: right;">0.0333858</td>
+<td style="text-align: right;">0.0738508</td>
+<td style="text-align: right;">0.0650410</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6310363</td>
+<td style="text-align: right;">0.8551928</td>
+<td style="text-align: right;">0.5955505</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">F</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.970271</td>
+<td style="text-align: right;">-0.0026753</td>
+<td style="text-align: right;">0.0750060</td>
+<td style="text-align: right;">-0.0063677</td>
+<td style="text-align: right;">0.0645989</td>
+<td style="text-align: right;">0.0341936</td>
+<td style="text-align: right;">0.0615160</td>
+<td style="text-align: right;">0.0668723</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.9376369</td>
+<td style="text-align: right;">0.2227329</td>
+<td style="text-align: right;">0.9241391</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">G</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.964311</td>
+<td style="text-align: right;">0.0141532</td>
+<td style="text-align: right;">-0.0610984</td>
+<td style="text-align: right;">-0.0578672</td>
+<td style="text-align: right;">0.0809943</td>
+<td style="text-align: right;">0.0336579</td>
+<td style="text-align: right;">0.0800990</td>
+<td style="text-align: right;">0.0656800</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6741202</td>
+<td style="text-align: right;">0.4455910</td>
+<td style="text-align: right;">0.3782927</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">H</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-2.074031</td>
+<td style="text-align: right;">-0.0178190</td>
+<td style="text-align: right;">-0.0436094</td>
+<td style="text-align: right;">0.0259745</td>
+<td style="text-align: right;">0.0597947</td>
+<td style="text-align: right;">0.0362203</td>
+<td style="text-align: right;">0.0587679</td>
+<td style="text-align: right;">0.0707912</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6227459</td>
+<td style="text-align: right;">0.4580494</td>
+<td style="text-align: right;">0.7136813</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">I</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.046055</td>
+<td style="text-align: right;">0.0307026</td>
+<td style="text-align: right;">0.0227238</td>
+<td style="text-align: right;">-0.0246112</td>
+<td style="text-align: right;">0.0714158</td>
+<td style="text-align: right;">0.0354844</td>
+<td style="text-align: right;">0.0702268</td>
+<td style="text-align: right;">0.0691813</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.3869068</td>
+<td style="text-align: right;">0.7462578</td>
+<td style="text-align: right;">0.7220276</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">J</td>
+</tr>
+</tbody>
+</table>
 
 Testing contrasts
 -----------------
@@ -473,3 +675,33 @@ p
 #>           [,1]
 #> [1,] 0.2692591
 ```
+
+Extracting Pearson residuals from the negative binomial mixed model
+-------------------------------------------------------------------
+
+Pearson residuals are the distances between the raw count and its
+expected value standardized by its standard deviation. Pearson residuals
+obtained from fitting the NBMM can be used for normalization and
+downstream analyses. The current version v1.2.0 will output the marginal
+Pearson residuals, which regress out only the fixed-effect variables.
+The next version will be including the conditional Pearson residuals,
+which further adjust for the subject-level random effects. The
+conditional Pearson residuals will be very useful in a situation where
+you need to remove the subject-level batch effects from the normalized
+residuals for your downstream analyses. The Pearson residuals can be
+easily extracted by using the `nbresidual` function after successfully
+running the `nebula` function. In `nbresidual`, you should provide the
+object returned by the `nebula` function together with the same
+arguments including the count matrix, `id`, `pred` and `offset` you use
+in running the `nebula` function.
+
+``` r
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset)
+```
+
+The parameters `count`, `id`, `pred` and `offset` should be the same in
+these two functions. Then, the marginal Pearson residuals are in the
+matrix `pres$residuals`. The rows in `pres$residuals` correspond to the
+genes in the output of `nebula`, and the columns are the cells in
+`count`.

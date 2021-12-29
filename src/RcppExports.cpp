@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // pmg_ll_eigen
 double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXd& posind_c, const Eigen::VectorXd& posindy_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
 RcppExport SEXP _nebula_pmg_ll_eigen(SEXP X_cSEXP, SEXP offset_cSEXP, SEXP Y_cSEXP, SEXP fid_cSEXP, SEXP cumsumy_cSEXP, SEXP posind_cSEXP, SEXP posindy_cSEXP, SEXP nind_cSEXP, SEXP k_cSEXP, SEXP beta_cSEXP, SEXP sigma_cSEXP) {

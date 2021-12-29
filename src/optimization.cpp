@@ -12,8 +12,6 @@
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::COLAMDOrdering<int> CO;
 
-// simple example of creating two matrices and
-// returning the result of an operatioon on them
 //
 // via the exports attribute we tell Rcpp to make this function
 // available from R
@@ -61,8 +59,6 @@ double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Vector
 }
 
 
-// another simple example: outer product of a vector,
-// returning a matrix
 //
 // [[Rcpp::export]]
 Eigen::VectorXd pmg_der_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::VectorXd & offset_c,
@@ -192,7 +188,6 @@ Eigen::MatrixXd pmg_hes_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eig
 }
 
 
-// and the inner product returns a scalar
 //
 // [[Rcpp::export]]
 double ptmg_ll_eigen(const Eigen::MatrixXd & X_c, const Eigen::VectorXd & offset_c,
@@ -259,7 +254,7 @@ double ptmg_ll_eigen(const Eigen::MatrixXd & X_c, const Eigen::VectorXd & offset
 
 }
 
-// and we can use Rcpp::List to return both at the same time
+
 //
 // [[Rcpp::export]]
 Eigen::VectorXd ptmg_der_eigen(const Eigen::MatrixXd & X_c, const Eigen::VectorXd & offset_c,
@@ -438,6 +433,7 @@ Rcpp::List center_m(const Eigen::Map<Eigen::MatrixXd> & X_c)
   Eigen::VectorXd sds = (cm.cwiseProduct(cm)).colwise().mean();
   sds = sds.array().sqrt();
   int nc = X_c.cols();
+  int nr = X_c.rows();
   for(int i=0;i<nc;i++)
   {
     if(sds(i)>0)
@@ -446,12 +442,15 @@ Rcpp::List center_m(const Eigen::Map<Eigen::MatrixXd> & X_c)
     }else{
       if(X_c(0,i)!=0)
       {
+        /*
         if(X_c(0,i)!=1)
         {
           cm.col(i) = X_c.col(i)/X_c(0,i);
         }else{
           cm.col(i) = X_c.col(i);
         }
+        */
+        cm.col(i) = Eigen::VectorXd::Constant(nr,1);
       }else{
         sds(i) = -1;
       }
