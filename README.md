@@ -383,7 +383,7 @@ subject-level overdispersion (\>1) should be removed or interpreted
 cautiously as well. In addition, at least a moderate number of subjects
 (\>30) are required for testing a subject-level variable using `nebula`
 simply because a small number of subjects are not enough to accurately
-estiamte the subject-level overdispersion. As shown in the original
+estimate the subject-level overdispersion. As shown in the original
 article, even 30 subjects lead to mild inflated type I errors in most
 simulated scenarios. If the number of subjects is small, methods
 accounting for small sample size (e.g., DESeq2, edgeR) should be used
@@ -682,18 +682,18 @@ Extracting Pearson residuals from the negative binomial mixed model
 Pearson residuals are the distances between the raw count and its
 expected value standardized by its standard deviation. Pearson residuals
 obtained from fitting the NBMM can be used for normalization and
-downstream analyses. The current version v1.2.0 will output the marginal
+downstream analyses. The current version (v1.2.0) outputs the marginal
 Pearson residuals, which regress out only the fixed-effect variables.
-The next version will be including the conditional Pearson residuals,
+The next version will be providing the conditional Pearson residuals,
 which further adjust for the subject-level random effects. The
-conditional Pearson residuals will be very useful in a situation where
-you need to remove the subject-level batch effects from the normalized
-residuals for your downstream analyses. The Pearson residuals can be
-easily extracted by using the `nbresidual` function after successfully
-running the `nebula` function. In `nbresidual`, you should provide the
-object returned by the `nebula` function together with the same
-arguments including the count matrix, `id`, `pred` and `offset` you use
-in running the `nebula` function.
+conditional Pearson residuals are very useful in a situation where one
+needs to remove the subject-level batch effects from the normalized
+residuals for downstream analyses. The Pearson residuals can be easily
+extracted by using the `nbresidual` function after successfully running
+the `nebula` function. In `nbresidual`, you should provide the object
+returned by the `nebula` function together with the same arguments
+including the count matrix, `id`, `pred` and `offset` used in running
+the `nebula` function.
 
 ``` r
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
