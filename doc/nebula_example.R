@@ -84,3 +84,9 @@ p
 #  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
 #  pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset)
 
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
+#  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,output_re=TRUE)
+
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
+#  pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
+

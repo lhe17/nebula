@@ -18,7 +18,8 @@ nebula(
   opt = "lbfgs",
   verbose = TRUE,
   cpc = 0.005,
-  covariance = FALSE
+  covariance = FALSE,
+  output_re = FALSE
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ nebula(
 \item{cpc}{A non-negative threshold for filtering low-expressed genes. Genes with counts per cell smaller than the specified value will not be analyzed.}
 
 \item{covariance}{If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.}
+
+\item{output_re}{If TRUE, nebula will output the subject-level random effects. Only effective for model='NBGMM' or 'NBLMM'.}
 }
 \value{
 summary: The estimated coefficient, standard error and p-value for each predictor.
@@ -58,6 +61,10 @@ overdispersion: The estimated cell-level and subject-level overdispersions \eqn{
 convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.
 
 algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
+
+covariance: The covariance matrix for the estimated log(FC).
+
+random_effect: The subject-level random effects.
 }
 \description{
 Association analysis of a multi-subject single-cell data set using a fast negative binomial mixed model
@@ -69,3 +76,11 @@ pred = model.matrix(~X1+X2+cc,data=sample_data$pred)
 re = nebula(count=sample_data$count,id=sample_data$sid,pred=pred)
 
 }
+\keyword{analysis}
+\keyword{binomial}
+\keyword{cell,}
+\keyword{differential}
+\keyword{mixed}
+\keyword{model,}
+\keyword{negative}
+\keyword{single}

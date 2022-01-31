@@ -15,12 +15,15 @@
 #' @param opt 'lbfgs' or 'trust'. Specifying the optimization algorithm used in NEBULA-LN. The default is 'lbfgs'. If it is 'trust', a trust region algorithm based on the Hessian matrix will be used for optimization.
 #' @param verbose An optional logical scalar indicating whether to print additional messages. Default is FALSE.
 #' @param covariance If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.
+#' @param output_re If TRUE, nebula will output the subject-level random effects. Only effective for model='NBGMM' or 'NBLMM'.
 #' @return summary: The estimated coefficient, standard error and p-value for each predictor.
 #' @return overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 #' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.    
 #' @return algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
+#' @return covariance: The covariance matrix for the estimated log(FC).
+#' @return random_effect: The subject-level random effects.
 
-#' @keywords 
+#' @keywords negative binomial mixed model, single cell, differential analysis 
 #' @export
 #' @examples
 #' library(nebula)
@@ -32,7 +35,7 @@
 
 nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max = c(10,1000), 
                    model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',
-                   verbose = TRUE, cpc = 0.005, covariance = FALSE)
+                   verbose = TRUE, cpc = 0.005, covariance = FALSE, output_re = FALSE)
 {
   reml = 0
   eps = 1e-06
@@ -90,6 +93,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   
   ntau = switch(model,'NBGMM'=2,'PMM'=1,'NBLMM'=2,
                 stop("The argument model should be NBGMM, PMM or NBLMM."))
+  if(model=='PMM')
+  {output_re <- FALSE}
   
   npar = nb + ntau
   lower = c(rep(-100, nb), min[1:ntau])
@@ -286,12 +291,16 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
           }
         }
       }
-      if(covariance==FALSE)
+      restemp = c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
+      if(covariance==TRUE)
       {
-        c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
-      }else{
-        c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit,repml$var[lower.tri(repml$var, diag = TRUE)])
+        restemp = c(restemp,repml$var[lower.tri(repml$var, diag = TRUE)])
       }
+      if(output_re==TRUE)
+      {
+        restemp = c(restemp,repml$logw)
+      }
+      restemp
     })
   }else {
     re = sapply(gid, function(x) {
@@ -313,16 +322,19 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       nnaind = (!is.nan(diag(hes))) & (re_t$par != lower) & (re_t$par != upper)
       covfix = solve(-hes[nnaind, nnaind])
       var_re[nnaind] = diag(covfix)
-      if(covariance==FALSE)
+      
+      restemp = c(re_t$par, var_re[1:nb],1,5)
+      if(covariance==TRUE)
       {
-        c(re_t$par, var_re[1:nb],1,5)
-      }else{
-        tempv = matrix(NA,nb,nb)
+        tempv = matrix(NA,npar,npar)
         tempv[nnaind, nnaind] = covfix
-        c(re_t$par, var_re[1:nb],1,5,tempv[lower.tri(tempv, diag = TRUE)])
+        tempv = tempv[1:nb,1:nb]
+        restemp = c(restemp, tempv[lower.tri(tempv, diag = TRUE)])
       }
+      restemp
     })
   }
+  
   re_all = as.data.frame(t(re))
   p = sapply(1:nb, function(x) pchisq(re_all[, x]^2/re_all[,x + npar], 1, lower.tail = FALSE))
   for (i in (npar + 1):(npar + nb)) {
@@ -337,12 +349,10 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   {
     sdssc = sds%*%t(sds)
     sdssc = sdssc[lower.tri(sdssc, diag = TRUE)]
-    re_all[, (npar+nb+3):ncol(re_all)] = t(t(re_all[, (npar+nb+3):ncol(re_all)])/sdssc)
+    covlen = length(sdssc)
+    colind = (npar+nb+3):(npar+nb+2+covlen)
+    re_all[, colind] = t(t(re_all[, colind])/sdssc)
   }
-  
-  re_all = cbind(re_all, matrix(p, ncol = nb))
-  re_all$gene_id = gid
-  re_all$gene = gname[gid]
   
   rl = c("Subject", "Cell")
   if (length(predn) == 0) {
@@ -351,22 +361,35 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     indp = predn
   }
   
+  curind = 2*nb+ntau+2
+  colnames(re_all)[1:curind] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm")
   ncov = 0
-  if(covariance==FALSE)
+  if(covariance==TRUE)
   {
-    colnames(re_all)[1:(3 * nb + ntau+2)] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm",paste0("p_", indp))
-  }else{
     ncov = (nb+1)*nb/2
-    colnames(re_all)[1:(3 * nb + ntau+2+ncov)] = c(paste0("logFC_",indp), rl[1:ntau], paste0("se_",indp), "convergence", "algorithm",paste0("cov_", 1:ncov),paste0("p_", indp))
+    colnames(re_all)[(curind+1):(curind+ncov)] = paste0("cov_", 1:ncov)
+    curind = curind + ncov
+  }
+  if(output_re==TRUE)
+  {
+    colnames(re_all)[(curind+1):(curind+k)] = paste0("random_", 1:k)
+    curind = curind + k
   }
   
+  re_all = cbind(re_all, matrix(p, ncol = nb))
+  colnames(re_all)[(curind+1):(curind+nb)] = paste0("p_", indp)
+  curind = curind + nb
+  re_all$gene_id = gid
+  re_all$gene = gname[gid]
+  
   algorithms = c('NBGMM (LN)','NBGMM (HL)','NBGMM (LN+HL)','NBLMM (HL)','PGMM','NBLMM (LN+HL)')
-  list(summary = re_all[, c(paste0("logFC_", indp), paste0("se_",indp), paste0("p_", indp), colnames(re_all)[(3*nb+ntau+3+ncov):ncol(re_all)])],
+  list(summary = re_all[, c(paste0("logFC_", indp), paste0("se_",indp), paste0("p_", indp), colnames(re_all)[(curind+1):ncol(re_all)])],
        overdispersion = re_all[, c(rl[1:ntau])],
        convergence = re_all[,'convergence'],
        algorithm = algorithms[re_all[,'algorithm']],
-       covariance = if(covariance==FALSE){NULL}else{re_all[, paste0("cov_", 1:ncov)]})
-  
+       covariance = if(covariance==FALSE){NULL}else{re_all[, paste0("cov_", 1:ncov)]},
+       random_effect = if(output_re==FALSE){NULL}else{re_all[, paste0("random_", 1:k)]})
+      
 }
 
 
