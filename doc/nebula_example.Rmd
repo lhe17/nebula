@@ -201,7 +201,7 @@ To extract the conditional Pearson residuals, we need to first let ```nebula``` 
 ```{r,eval=FALSE,echo=TRUE}
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,output_re=TRUE)
 ```
-The returned object will include an *M* by *L* matrix of the random effects, where *L* is the number of subjects. In the current version, this option does NOT support ```model="PMM"```. Then, the conditional Pearson residuals can be extracted by running
+The returned object will include an *M* by *L* matrix of the random effects, where *L* is the number of subjects. In the current version, this option does NOT support ```model="PMM"```. Then, the conditional Pearson residuals can be extracted by running ```nbresidual``` with ```conditional=TRUE```.
 ```{r,eval=FALSE,echo=TRUE}
 pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
 ```

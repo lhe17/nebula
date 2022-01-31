@@ -268,16 +268,16 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432326 0.9284701 0.08125256 0.8840821
-#> 2  0.07455465 0.9726512 0.07102681 0.9255032
-#> 3  0.17403264 0.9817571 0.17159404 0.9266395
-#> 4  0.05352150 0.8516682 0.05026165 0.8124118
-#> 5  0.07480034 1.3254379 0.07075366 1.2674146
+#> 1  0.08432321 0.9284703 0.08125256 0.8840821
+#> 2  0.07455464 0.9726512 0.07102681 0.9255032
+#> 3  0.17403276 0.9817570 0.17159404 0.9266395
+#> 4  0.05352148 0.8516682 0.05026165 0.8124118
+#> 5  0.07480033 1.3254379 0.07075366 1.2674146
 #> 6  0.12372426 1.1653128 0.12086392 1.1096065
-#> 7  0.07724823 0.9578170 0.07360445 0.9112956
-#> 8  0.13797636 0.7991950 0.13571262 0.7549629
-#> 9  0.05879485 0.8568851 0.05541398 0.8139652
-#> 10 0.09782324 0.9940222 0.09496649 0.9410035
+#> 7  0.07724824 0.9578169 0.07360445 0.9112956
+#> 8  0.13797646 0.7991954 0.13571262 0.7549629
+#> 9  0.05879492 0.8568854 0.05541398 0.8139652
+#> 10 0.09782335 0.9940223 0.09496649 0.9410035
 ```
 
 Such difference has little impact on testing fixed-effects predictors
@@ -287,16 +287,16 @@ under this sample size.
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
+#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
 #> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
+#> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
+#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
 #> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432
+#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
+#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
+#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
+#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
@@ -509,7 +509,7 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 <td style="text-align: right;">0.0686939</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">0.8754792</td>
-<td style="text-align: right;">0.6276889</td>
+<td style="text-align: right;">0.6276888</td>
 <td style="text-align: right;">0.2549156</td>
 <td style="text-align: right;">4</td>
 <td style="text-align: left;">D</td>
@@ -572,7 +572,7 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 <td style="text-align: right;">0.0800990</td>
 <td style="text-align: right;">0.0656800</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.6741202</td>
+<td style="text-align: right;">0.6741201</td>
 <td style="text-align: right;">0.4455910</td>
 <td style="text-align: right;">0.3782927</td>
 <td style="text-align: right;">8</td>
@@ -721,7 +721,8 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 The returned object will include an *M* by *L* matrix of the random
 effects, where *L* is the number of subjects. In the current version,
 this option does NOT support `model="PMM"`. Then, the conditional
-Pearson residuals can be extracted by running
+Pearson residuals can be extracted by running `nbresidual` with
+`conditional=TRUE`.
 
 ``` r
 pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
