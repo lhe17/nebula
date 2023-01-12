@@ -62,6 +62,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     intcol = 1
   }else {
     predn = colnames(pred)
+    if((!is.null(predn))&length(unique(predn))<ncol(pred))
+    {stop('All columns of the design matrix should have a unique name.')}
     pred = center_m(as.matrix(pred))
     sds = pred$sds
     if((sum(sds==0)>1)|(sum(sds<0)>0))
@@ -87,7 +89,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     of_re = cv_offset(as.double(offset),1,nind)
   }
   offset = of_re$offset;
-  moffset = of_re$moffset;
+  # moffset = of_re$moffset;
+  moffset = log(of_re$mexpoffset)
   cv = of_re$cv
   cv2 = cv*cv
   
@@ -355,7 +358,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   }
   
   rl = c("Subject", "Cell")
-  if (length(predn) == 0) {
+  if ((length(predn) == 0)|is.null(predn)) {
     indp = 1:nb
   }else {
     indp = predn

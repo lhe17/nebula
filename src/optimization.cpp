@@ -474,12 +474,14 @@ Rcpp::List cv_offset(const Eigen::Map<Eigen::VectorXd> & offset_c, int input, co
   }else{
     offset = Eigen::VectorXd::Constant(nc,1);
   }
+  double mexpoffset = moffset;
   
   if(moffset>0)
   {
     cv = (offset.array()-moffset).square().sum();
     cv = sqrt(cv/nc)/moffset;
   }
+  
   offset = offset.array().log();
   if(input==1)
   {
@@ -489,6 +491,7 @@ Rcpp::List cv_offset(const Eigen::Map<Eigen::VectorXd> & offset_c, int input, co
   }
   return Rcpp::List::create(Rcpp::Named("offset") = offset,
                             Rcpp::Named("moffset") = moffset,
+                            Rcpp::Named("mexpoffset") = mexpoffset,
                             Rcpp::Named("cv") = cv);
 
 }
