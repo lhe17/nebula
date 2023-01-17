@@ -4,7 +4,7 @@ Title: Negative Binomial Mixed Models Using Large-Sample Approximation for Diffe
 Version: 1.2.2
 Date: 2023-01-09
 Author: Liang He
-Maintainer: Liang He <liang.he@health.sdu.dk>
+Maintainer: Liang He <lianghe@health.sdu.dk>
 Description: A fast negative binomial mixed model for conducting association analysis of multi-subject single-cell data. It can be used for identifying marker genes, differential expression and co-expression analyses. The model includes subject-level random effects to account for the hierarchical structure in multi-subject single-cell data. See He et al. (2021) <doi:10.1038/s42003-021-02146-6>.  
 License: GPL-3
 Encoding: UTF-8
