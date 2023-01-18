@@ -59,7 +59,7 @@ R-3.6, the version 1.1.8 can be installed via R-forge
 (<https://r-forge.r-project.org/R/?group_id=2407>) although it is not
 recommended to use an older version.
 
-Please contact <liang.he@health.sdu.dk> for more information.
+Please contact <lianghe@health.sdu.dk> for more information.
 
 ## Functions
 

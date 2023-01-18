@@ -22,8 +22,6 @@
 #' @return algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
 #' @return covariance: The covariance matrix for the estimated log(FC).
 #' @return random_effect: The subject-level random effects.
-
-#' @keywords negative binomial mixed model, single cell, differential analysis 
 #' @export
 #' @examples
 #' library(nebula)

@@ -76,11 +76,3 @@ pred = model.matrix(~X1+X2+cc,data=sample_data$pred)
 re = nebula(count=sample_data$count,id=sample_data$sid,pred=pred)
 
 }
-\keyword{analysis}
-\keyword{binomial}
-\keyword{cell,}
-\keyword{differential}
-\keyword{mixed}
-\keyword{model,}
-\keyword{negative}
-\keyword{single}
