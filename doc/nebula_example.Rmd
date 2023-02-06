@@ -2,6 +2,7 @@
 title: "A fast negative binomial mixed model for analyzing multi-subject single-cell data"
 author: "Liang He"
 date: "`r Sys.Date()`"
+bibliography: "references.bib"
 output:
   html_document:
     toc: yes
@@ -21,13 +22,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.2.2
+# NEBULA v1.3.0
 
 ## Overview
 
 The R package, *nebula*, provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differential expression, performing cell-level co-expression analysis, and obtaining Pearson residuals for downstream analyses. 
 
-More details can be found in the manuscript "NEBULA: a fast negative binomial mixed model for differential expression and co-expression analyses of large-scale multi-subject single-cell data" (https://www.nature.com/articles/s42003-021-02146-6).
+More details can be found in [@He_2021] (https://www.nature.com/articles/s42003-021-02146-6).
 
 ## Installation
 
@@ -40,7 +41,7 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
-Because the package *nebula* uses the R package *Rfast*, the installation process may first install *Rfast*, which requires that GSL is installed or available in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0. Starting from this version, *nebula* does not support R-3.6 or an older version of R. For R-3.6, the version 1.1.8 can be installed via R-forge (https://r-forge.r-project.org/R/?group_id=2407) although it is not recommended to use an older version. 
+Because the package *nebula* uses the R package *Rfast*, the installation process may first install *Rfast*, which requires that GSL is installed or available in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0. Since v1.2.0, *nebula* does not support R-3.6 or an older version of R. For R-3.6, version 1.1.8 can be installed via R-forge (https://r-forge.r-project.org/R/?group_id=2407) although it is not recommended to use an older version. 
 
 Please contact lianghe@health.sdu.dk for more information.
 
@@ -133,9 +134,7 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
 
 *nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code $\leq$ -20 suggests that the algorithm does not converge well. If the convergence code is -30, which indicates a failure of convergence, their summary statistics should NOT be used. If the convergence code is -20 or -40, it indicates that the optimization algorithm stops at the maximum step limit before the complete convergence. The results should be interpreted with caution in this case. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions, in which case the likelihood is flat or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) may solve the problem. 
 
-Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noises. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but more common in e.g., SMART-seq2 as PCR duplicates introduce substantial noises. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in (https://www.nature.com/articles/s42003-021-02146-6), genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. 
-
-If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well. In addition, at least a moderate number of subjects (>30) are required for testing a subject-level variable using ```nebula``` simply because a small number of subjects are not enough to accurately estimate the subject-level overdispersion. As shown in the original article, even 30 subjects lead to mild inflated type I errors in most simulated scenarios. If the number of subjects is small, methods accounting for small sample size (e.g., DESeq2, edgeR) should be used for testing subject-level variables.   
+Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noises. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but more common in e.g., SMART-seq2 as PCR duplicates introduce substantial noises. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in [@He_2021], genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well.
 
 ## Using other mixed models
 
@@ -148,7 +147,18 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 ```{r,echo=FALSE,results='asis'}
 knitr::kable(re$summary)
 ```
- 
+
+## Special attention paid to testing subject-level variables
+
+When testing subject-level variables, it should be kept in mind that the actual sample size is the number of subjects, not the number of cells in the data set. At least a moderate number of subjects (>30) are required for testing a subject-level variable using ```nebula``` simply because a small number of subjects are not enough to accurately estimate the subject-level overdispersion. As shown in the original article [@He_2021], even 30 subjects lead to mild inflated type I errors in most simulated scenarios. If the number of subjects is very small, methods designed for small sample size (e.g., DESeq2, edgeR) should be used for testing subject-level variables.
+
+In addition, when the ratio between the number of subjects and the number of subject-level variables is small (<10), it is recommended to instead use a restricted maximum likelihood (REML) estimate, which is provided in ```nebula``` through the argument ```reml```. Please see [@He_2021] for more details about the formula of REML. This is because the number of subject-level fixed-effects parameters should be much smaller than the number of subjects in order to make the maximum likelihood estimation (MLE) work properly. For example, if the data set has 50 subjects, it is a good practice to keep the number of subject-level variables below 5 based on our simulation study. Increasing the number of subject-level parameters will gradually inflate the type I error rate due to an underestimated overdispersion. When these two numbers are at the same magnitude, the MLE for the overdispersion will break down and consequently, the NBMM can degenerate to a negative binomial model. In contrast, REML takes into account the uncertainty of the estimated fixed effects and controls the false positive rate even if many subject-level covariates are included in the model. As shown in the following example, one could simply specify ```reml=1``` to use REML, which is supported only for ```model='NBLMM'``` in the current version.  
+
+### Example
+```{r,eval=TRUE,echo=TRUE}
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1)
+```
+
 ## Testing contrasts
 
 In some situations, a user may want to test a combination (contrast) of the log(FC) or perform a global test for multiple variables or levels. For example, a user may want to test whether the log(FC) of two variables are the same. Here, we show how ```nebula``` can be used for this kind of analysis.
@@ -206,4 +216,4 @@ The returned object will include an *M* by *L* matrix of the random effects, whe
 pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
 ```
 
-
+## References

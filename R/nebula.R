@@ -16,6 +16,7 @@
 #' @param verbose An optional logical scalar indicating whether to print additional messages. Default is FALSE.
 #' @param covariance If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.
 #' @param output_re If TRUE, nebula will output the subject-level random effects. Only effective for model='NBGMM' or 'NBLMM'.
+#' @param reml Either 0 (default) or 1. If it is one, REML will be used to estimate the overdispersions.
 #' @return summary: The estimated coefficient, standard error and p-value for each predictor.
 #' @return overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 #' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.    
@@ -33,9 +34,11 @@
 
 nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max = c(10,1000), 
                    model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',
-                   verbose = TRUE, cpc = 0.005, covariance = FALSE, output_re = FALSE)
+                   verbose = TRUE, cpc = 0.005, covariance = FALSE, output_re = FALSE, reml = 0)
 {
-  reml = 0
+  # reml = 0
+  reml <- check_reml(reml,model)
+     
   eps = 1e-06
   
   if(cpc<0)
@@ -316,7 +319,6 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
                nb = nb, k = k, nind = nind, lower = lower,upper = upper)
       })
       
-      # hes = optimHess(re_t$par, pmg_ll, gr = pmg_der, posindy = posv$posindy,X = pred, offset = offset, Y = posv$Y, fid = fid, cumsumy = cumsumy[x, ], posind = posind[[x]],nb = nb, k = k, nind = nind)
       hes = pmg_hes(re_t$par,posindy = posv$posindy,X = pred, offset = offset, Y = posv$Y,fid = fid, cumsumy = cumsumy[x, ], posind = posind[[x]],nb = nb, k = k, nind = nind)
       
       var_re = rep(NA, npar)

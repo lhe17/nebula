@@ -19,7 +19,8 @@ nebula(
   verbose = TRUE,
   cpc = 0.005,
   covariance = FALSE,
-  output_re = FALSE
+  output_re = FALSE,
+  reml = 0
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ nebula(
 \item{covariance}{If TRUE, nebula will output the covariance matrix for the estimated log(FC), which can be used for testing contrasts.}
 
 \item{output_re}{If TRUE, nebula will output the subject-level random effects. Only effective for model='NBGMM' or 'NBLMM'.}
+
+\item{reml}{Either 0 (default) or 1. If it is one, REML will be used to estimate the overdispersions.}
 }
 \value{
 summary: The estimated coefficient, standard error and p-value for each predictor.

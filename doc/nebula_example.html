@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2023-01-18" />
+<meta name="date" content="2023-02-06" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -253,6 +253,28 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 
 
@@ -359,47 +381,55 @@ pre code {
 <h1 class="title toc-ignore">A fast negative binomial mixed model for
 analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2023-01-18</h4>
+<h4 class="date">2023-02-06</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#nebula-v1.2.2">NEBULA v1.2.2</a>
+<li><a href="#nebula-v1.3.0" id="toc-nebula-v1.3.0">NEBULA v1.3.0</a>
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#installation">Installation</a>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#installation" id="toc-installation">Installation</a>
 <ul>
-<li><a href="#most-recent-version">Most recent version</a></li>
+<li><a href="#most-recent-version" id="toc-most-recent-version">Most
+recent version</a></li>
 </ul></li>
-<li><a href="#functions">Functions</a></li>
-<li><a href="#basic-usage">Basic usage</a>
+<li><a href="#functions" id="toc-functions">Functions</a></li>
+<li><a href="#basic-usage" id="toc-basic-usage">Basic usage</a>
 <ul>
-<li><a href="#example">Example</a></li>
+<li><a href="#example" id="toc-example">Example</a></li>
 </ul></li>
-<li><a href="#specifying-scaling-factors">Specifying scaling factors</a>
+<li><a href="#specifying-scaling-factors" id="toc-specifying-scaling-factors">Specifying scaling factors</a>
 <ul>
-<li><a href="#example-1">Example</a></li>
+<li><a href="#example-1" id="toc-example-1">Example</a></li>
 </ul></li>
-<li><a href="#difference-between-nebula-ln-and-nebula-hl">Difference
-between NEBULA-LN and NEBULA-HL</a></li>
-<li><a href="#filtering-low-expression-genes">Filtering low-expression
+<li><a href="#difference-between-nebula-ln-and-nebula-hl" id="toc-difference-between-nebula-ln-and-nebula-hl">Difference between
+NEBULA-LN and NEBULA-HL</a></li>
+<li><a href="#filtering-low-expression-genes" id="toc-filtering-low-expression-genes">Filtering low-expression
 genes</a></li>
-<li><a href="#checking-convergence-for-the-summary-statistics-and-quality-control">Checking
+<li><a href="#checking-convergence-for-the-summary-statistics-and-quality-control" id="toc-checking-convergence-for-the-summary-statistics-and-quality-control">Checking
 convergence for the summary statistics and quality control</a></li>
-<li><a href="#using-other-mixed-models">Using other mixed models</a>
+<li><a href="#using-other-mixed-models" id="toc-using-other-mixed-models">Using other mixed models</a>
 <ul>
-<li><a href="#example-2">Example</a></li>
+<li><a href="#example-2" id="toc-example-2">Example</a></li>
 </ul></li>
-<li><a href="#testing-contrasts">Testing contrasts</a></li>
-<li><a href="#extracting-marginal-and-conditional-pearson-residuals">Extracting
+<li><a href="#special-attention-paid-to-testing-subject-level-variables" id="toc-special-attention-paid-to-testing-subject-level-variables">Special
+attention paid to testing subject-level variables</a>
+<ul>
+<li><a href="#example-3" id="toc-example-3">Example</a></li>
+</ul></li>
+<li><a href="#testing-contrasts" id="toc-testing-contrasts">Testing
+contrasts</a></li>
+<li><a href="#extracting-marginal-and-conditional-pearson-residuals" id="toc-extracting-marginal-and-conditional-pearson-residuals">Extracting
 marginal and conditional Pearson residuals</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
 </ul></li>
 </ul>
 </div>
 
-<div id="nebula-v1.2.2" class="section level1">
-<h1>NEBULA v1.2.2</h1>
+<div id="nebula-v1.3.0" class="section level1">
+<h1>NEBULA v1.3.0</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>The R package, <em>nebula</em>, provides fast algorithms for fitting
@@ -411,9 +441,8 @@ a negative binomial mixed model (NBMM). The package nebula can be used
 for e.g., identifying marker genes, testing treatment effects, detecting
 genes with differential expression, performing cell-level co-expression
 analysis, and obtaining Pearson residuals for downstream analyses.</p>
-<p>More details can be found in the manuscript “NEBULA: a fast negative
-binomial mixed model for differential expression and co-expression
-analyses of large-scale multi-subject single-cell data” (<a href="https://www.nature.com/articles/s42003-021-02146-6" class="uri">https://www.nature.com/articles/s42003-021-02146-6</a>).</p>
+<p>More details can be found in <span class="citation">(He et al.
+2021)</span> (<a href="https://www.nature.com/articles/s42003-021-02146-6" class="uri">https://www.nature.com/articles/s42003-021-02146-6</a>).</p>
 </div>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
@@ -427,9 +456,9 @@ install_github(&quot;lhe17/nebula&quot;)</code></pre>
 <em>Rfast</em>, the installation process may first install
 <em>Rfast</em>, which requires that GSL is installed or available in the
 environment. The installation also requires Rcpp-1.0.7 and has been
-tested on R-4.1.0. Starting from this version, <em>nebula</em> does not
-support R-3.6 or an older version of R. For R-3.6, the version 1.1.8 can
-be installed via R-forge (<a href="https://r-forge.r-project.org/R/?group_id=2407" class="uri">https://r-forge.r-project.org/R/?group_id=2407</a>) although
+tested on R-4.1.0. Since v1.2.0, <em>nebula</em> does not support R-3.6
+or an older version of R. For R-3.6, version 1.1.8 can be installed via
+R-forge (<a href="https://r-forge.r-project.org/R/?group_id=2407" class="uri">https://r-forge.r-project.org/R/?group_id=2407</a>) although
 it is not recommended to use an older version.</p>
 <p>Please contact <a href="mailto:lianghe@health.sdu.dk" class="email">lianghe@health.sdu.dk</a> for more information.</p>
 </div>
@@ -732,22 +761,15 @@ especially among abundantly expressed genes, but more common in e.g.,
 SMART-seq2 as PCR duplicates introduce substantial noises. It might be
 hard to give a precise cut-off for a large overdispersion because it
 also depends on the sample size of the data. Based on the empirical
-simulation study in (<a href="https://www.nature.com/articles/s42003-021-02146-6" class="uri">https://www.nature.com/articles/s42003-021-02146-6</a>),
+simulation study in <span class="citation">(He et al. 2021)</span>,
 genes with an estimated cell-level overdispersion &gt;100 should be
 removed for a data set with at least 50 cells per subject. On the other
 hand, if the purpose is to extract residuals for downstream analysis
 such as clustering, genes with a large cell-level overdispersion might
-be preferable because they have large variations.</p>
-<p>If the variable of interest is subject-level, genes with a very large
-subject-level overdispersion (&gt;1) should be removed or interpreted
-cautiously as well. In addition, at least a moderate number of subjects
-(&gt;30) are required for testing a subject-level variable using
-<code>nebula</code> simply because a small number of subjects are not
-enough to accurately estimate the subject-level overdispersion. As shown
-in the original article, even 30 subjects lead to mild inflated type I
-errors in most simulated scenarios. If the number of subjects is small,
-methods accounting for small sample size (e.g., DESeq2, edgeR) should be
-used for testing subject-level variables.</p>
+be preferable because they have large variations. If the variable of
+interest is subject-level, genes with a very large subject-level
+overdispersion (&gt;1) should be removed or interpreted cautiously as
+well.</p>
 </div>
 <div id="using-other-mixed-models" class="section level2">
 <h2>Using other mixed models</h2>
@@ -806,18 +828,18 @@ Here is an example of using the PMM to fit the example data set.</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">-1.903571</td>
-<td align="right">-0.0155809</td>
-<td align="right">-0.0976660</td>
-<td align="right">0.0511060</td>
-<td align="right">0.0661297</td>
-<td align="right">0.0329115</td>
-<td align="right">0.0655553</td>
-<td align="right">0.0642299</td>
+<td align="right">-1.903559</td>
+<td align="right">-0.0155807</td>
+<td align="right">-0.0976567</td>
+<td align="right">0.0511051</td>
+<td align="right">0.0661288</td>
+<td align="right">0.0329114</td>
+<td align="right">0.0655551</td>
+<td align="right">0.0642298</td>
 <td align="right">0</td>
-<td align="right">0.6359142</td>
-<td align="right">0.1362700</td>
-<td align="right">0.4262222</td>
+<td align="right">0.6359176</td>
+<td align="right">0.1363061</td>
+<td align="right">0.4262299</td>
 <td align="right">1</td>
 <td align="left">A</td>
 </tr>
@@ -838,135 +860,176 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="left">B</td>
 </tr>
 <tr class="odd">
-<td align="right">-2.032645</td>
-<td align="right">0.0179777</td>
-<td align="right">0.0009387</td>
-<td align="right">-0.0505390</td>
-<td align="right">0.0908196</td>
+<td align="right">-2.032603</td>
+<td align="right">0.0179868</td>
+<td align="right">0.0009264</td>
+<td align="right">-0.0505295</td>
+<td align="right">0.0908162</td>
 <td align="right">0.0345496</td>
-<td align="right">0.0932449</td>
-<td align="right">0.0676706</td>
+<td align="right">0.0932444</td>
+<td align="right">0.0676704</td>
 <td align="right">0</td>
-<td align="right">0.6028248</td>
-<td align="right">0.9919678</td>
-<td align="right">0.4551611</td>
+<td align="right">0.6026385</td>
+<td align="right">0.9920733</td>
+<td align="right">0.4552440</td>
 <td align="right">3</td>
 <td align="left">C</td>
 </tr>
 <tr class="even">
-<td align="right">-2.009746</td>
-<td align="right">-0.0054963</td>
-<td align="right">-0.0278602</td>
-<td align="right">0.0782074</td>
-<td align="right">0.0573209</td>
-<td align="right">0.0350745</td>
-<td align="right">0.0574459</td>
+<td align="right">-2.009743</td>
+<td align="right">-0.0055009</td>
+<td align="right">-0.0278638</td>
+<td align="right">0.0782083</td>
+<td align="right">0.0573206</td>
+<td align="right">0.0350744</td>
+<td align="right">0.0574457</td>
 <td align="right">0.0686939</td>
 <td align="right">0</td>
-<td align="right">0.8754792</td>
-<td align="right">0.6276889</td>
-<td align="right">0.2549156</td>
+<td align="right">0.8753743</td>
+<td align="right">0.6276435</td>
+<td align="right">0.2549097</td>
 <td align="right">4</td>
 <td align="left">D</td>
 </tr>
 <tr class="odd">
-<td align="right">-1.980528</td>
-<td align="right">0.0106338</td>
-<td align="right">-0.0248791</td>
-<td align="right">0.0312190</td>
-<td align="right">0.0644287</td>
-<td align="right">0.0343355</td>
-<td align="right">0.0621576</td>
+<td align="right">-1.980527</td>
+<td align="right">0.0106340</td>
+<td align="right">-0.0248788</td>
+<td align="right">0.0312191</td>
+<td align="right">0.0644293</td>
+<td align="right">0.0343354</td>
+<td align="right">0.0621582</td>
 <td align="right">0.0671645</td>
 <td align="right">0</td>
-<td align="right">0.7567865</td>
-<td align="right">0.6889656</td>
-<td align="right">0.6420644</td>
+<td align="right">0.7567817</td>
+<td align="right">0.6889725</td>
+<td align="right">0.6420637</td>
 <td align="right">5</td>
 <td align="left">E</td>
 </tr>
 <tr class="even">
-<td align="right">-1.950451</td>
-<td align="right">0.0160341</td>
-<td align="right">-0.0134775</td>
-<td align="right">-0.0345244</td>
-<td align="right">0.0778198</td>
+<td align="right">-1.950454</td>
+<td align="right">0.0160303</td>
+<td align="right">-0.0134764</td>
+<td align="right">-0.0345278</td>
+<td align="right">0.0778201</td>
 <td align="right">0.0333858</td>
 <td align="right">0.0738508</td>
 <td align="right">0.0650410</td>
 <td align="right">0</td>
-<td align="right">0.6310363</td>
-<td align="right">0.8551928</td>
-<td align="right">0.5955505</td>
+<td align="right">0.6311185</td>
+<td align="right">0.8552054</td>
+<td align="right">0.5955145</td>
 <td align="right">6</td>
 <td align="left">F</td>
 </tr>
 <tr class="odd">
 <td align="right">-1.970271</td>
-<td align="right">-0.0026753</td>
-<td align="right">0.0750060</td>
-<td align="right">-0.0063677</td>
+<td align="right">-0.0026762</td>
+<td align="right">0.0750061</td>
+<td align="right">-0.0063660</td>
 <td align="right">0.0645989</td>
 <td align="right">0.0341936</td>
-<td align="right">0.0615160</td>
+<td align="right">0.0615159</td>
 <td align="right">0.0668723</td>
 <td align="right">0</td>
-<td align="right">0.9376369</td>
-<td align="right">0.2227329</td>
-<td align="right">0.9241391</td>
+<td align="right">0.9376159</td>
+<td align="right">0.2227322</td>
+<td align="right">0.9241583</td>
 <td align="right">7</td>
 <td align="left">G</td>
 </tr>
 <tr class="even">
-<td align="right">-1.964311</td>
-<td align="right">0.0141532</td>
-<td align="right">-0.0610984</td>
-<td align="right">-0.0578672</td>
-<td align="right">0.0809943</td>
-<td align="right">0.0336579</td>
-<td align="right">0.0800990</td>
-<td align="right">0.0656800</td>
+<td align="right">-1.964322</td>
+<td align="right">0.0141545</td>
+<td align="right">-0.0610982</td>
+<td align="right">-0.0578682</td>
+<td align="right">0.0809950</td>
+<td align="right">0.0336580</td>
+<td align="right">0.0800989</td>
+<td align="right">0.0656801</td>
 <td align="right">0</td>
-<td align="right">0.6741202</td>
-<td align="right">0.4455910</td>
-<td align="right">0.3782927</td>
+<td align="right">0.6740920</td>
+<td align="right">0.4455920</td>
+<td align="right">0.3782847</td>
 <td align="right">8</td>
 <td align="left">H</td>
 </tr>
 <tr class="odd">
-<td align="right">-2.074031</td>
-<td align="right">-0.0178190</td>
-<td align="right">-0.0436094</td>
-<td align="right">0.0259745</td>
-<td align="right">0.0597947</td>
+<td align="right">-2.074035</td>
+<td align="right">-0.0178188</td>
+<td align="right">-0.0436111</td>
+<td align="right">0.0259748</td>
+<td align="right">0.0597958</td>
 <td align="right">0.0362203</td>
-<td align="right">0.0587679</td>
-<td align="right">0.0707912</td>
+<td align="right">0.0587687</td>
+<td align="right">0.0707913</td>
 <td align="right">0</td>
-<td align="right">0.6227459</td>
-<td align="right">0.4580494</td>
-<td align="right">0.7136813</td>
+<td align="right">0.6227507</td>
+<td align="right">0.4580383</td>
+<td align="right">0.7136780</td>
 <td align="right">9</td>
 <td align="left">I</td>
 </tr>
 <tr class="even">
-<td align="right">-2.046055</td>
-<td align="right">0.0307026</td>
-<td align="right">0.0227238</td>
-<td align="right">-0.0246112</td>
-<td align="right">0.0714158</td>
+<td align="right">-2.046058</td>
+<td align="right">0.0307022</td>
+<td align="right">0.0227234</td>
+<td align="right">-0.0246096</td>
+<td align="right">0.0714146</td>
 <td align="right">0.0354844</td>
-<td align="right">0.0702268</td>
+<td align="right">0.0702255</td>
 <td align="right">0.0691813</td>
 <td align="right">0</td>
-<td align="right">0.3869068</td>
+<td align="right">0.3869124</td>
 <td align="right">0.7462578</td>
-<td align="right">0.7220276</td>
+<td align="right">0.7220452</td>
 <td align="right">10</td>
 <td align="left">J</td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="special-attention-paid-to-testing-subject-level-variables" class="section level2">
+<h2>Special attention paid to testing subject-level variables</h2>
+<p>When testing subject-level variables, it should be kept in mind that
+the actual sample size is the number of subjects, not the number of
+cells in the data set. At least a moderate number of subjects (&gt;30)
+are required for testing a subject-level variable using
+<code>nebula</code> simply because a small number of subjects are not
+enough to accurately estimate the subject-level overdispersion. As shown
+in the original article <span class="citation">(He et al. 2021)</span>,
+even 30 subjects lead to mild inflated type I errors in most simulated
+scenarios. If the number of subjects is very small, methods designed for
+small sample size (e.g., DESeq2, edgeR) should be used for testing
+subject-level variables.</p>
+<p>In addition, when the ratio between the number of subjects and the
+number of subject-level variables is small (&lt;10), it is recommended
+to instead use a restricted maximum likelihood (REML) estimate, which is
+provided in <code>nebula</code> through the argument <code>reml</code>.
+Please see <span class="citation">(He et al. 2021)</span> for more
+details about the formula of REML. This is because the number of
+subject-level fixed-effects parameters should be much smaller than the
+number of subjects in order to make the maximum likelihood estimation
+(MLE) work properly. For example, if the data set has 50 subjects, it is
+a good practice to keep the number of subject-level variables below 5
+based on our simulation study. Increasing the number of subject-level
+parameters will gradually inflate the type I error rate due to an
+underestimated overdispersion. When these two numbers are at the same
+magnitude, the MLE for the overdispersion will break down and
+consequently, the NBMM can degenerate to a negative binomial model. In
+contrast, REML takes into account the uncertainty of the estimated fixed
+effects and controls the false positive rate even if many subject-level
+covariates are included in the model. As shown in the following example,
+one could simply specify <code>reml=1</code> to use REML, which is
+supported only for <code>model=&#39;NBLMM&#39;</code> in the current
+version.</p>
+<div id="example-3" class="section level3">
+<h3>Example</h3>
+<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;NBLMM&#39;,reml=1)
+#&gt; Remove  0  genes having low expression.
+#&gt; Analyzing  10  genes with  30  subjects and  6176  cells.</code></pre>
 </div>
 </div>
 <div id="testing-contrasts" class="section level2">
@@ -1066,6 +1129,18 @@ the current version, this option does NOT support
 extracted by running <code>nbresidual</code> with
 <code>conditional=TRUE</code>.</p>
 <pre class="r"><code>pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)</code></pre>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2 class="unnumbered">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-He_2021" class="csl-entry">
+He, Liang, Jose Davila-Velderrain, Tomokazu S. Sumida, David A. Hafler,
+Manolis Kellis, and Alexander M. Kulminski. 2021. <span>“NEBULA Is a
+Fast Negative Binomial Mixed Model for Differential or Co-Expression
+Analysis of Large-Scale Multi-Subject Single-Cell Data.”</span>
+<em>Communications Biology</em>, no. 629 (May). <a href="https://doi.org/10.1038/s42003-021-02146-6">https://doi.org/10.1038/s42003-021-02146-6</a>.
+</div>
+</div>
 </div>
 </div>
 

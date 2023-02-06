@@ -56,6 +56,9 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 knitr::kable(re$summary)
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1)
+
+## ----eval=TRUE,echo=TRUE------------------------------------------------------
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
 cov= matrix(NA,4,4)
