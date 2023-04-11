@@ -4,6 +4,8 @@ author: "Liang He"
 date: "`r Sys.Date()`"
 bibliography: "references.bib"
 output:
+  html_document:
+    toc: yes
   md_document:
     toc: yes
     variant: markdown_github
@@ -20,11 +22,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.3.0
+# NEBULA v1.4.0
 
 ## Overview
 
-The R package, *nebula*, provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). The package nebula can be used for e.g., identifying marker genes, testing treatment effects, detecting genes with differential expression, performing cell-level co-expression analysis, and obtaining Pearson residuals for downstream analyses. 
+The *nebula* package is an R package that provides fast algorithms for fitting negative binomial and Poisson mixed models for analyzing large-scale, multi-subject single-cell data. The package *nebula* accounts for the hierarchical structure of the data by decomposing the total overdispersion into between-subject and within-subject components using a negative binomial mixed model (NBMM). Users can utilize the package for various tasks, such as identifying marker genes, testing treatment effects, detecting genes with differential expression, performing cell-level co-expression analysis, and obtaining Pearson residuals for downstream analyses. 
 
 More details can be found in [@He_2021] (https://www.nature.com/articles/s42003-021-02146-6).
 
@@ -39,9 +41,9 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
-Because the package *nebula* uses the R package *Rfast*, the installation process may first install *Rfast*, which requires that GSL is installed or available in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0. Since v1.2.0, *nebula* does not support R-3.6 or an older version of R. For R-3.6, version 1.1.8 can be installed via R-forge (https://r-forge.r-project.org/R/?group_id=2407) although it is not recommended to use an older version. 
+During installation, the *nebula* package may first install the *Rfast* package, which requires the presence of GSL in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0. Starting from version 1.2.0, *nebula* is no longer compatible with R-3.6 or earlier versions of R. Users who have R-3.6 may install version 1.1.8 via R-forge (https://r-forge.r-project.org/R/?group_id=2407). However, it is not recommended to use an older version of *nebula*. 
 
-Please contact lianghe@health.sdu.dk for more information.
+Please contact hyx520101@gmail.com for more information.
 
 ## Functions
 
@@ -81,9 +83,9 @@ head(sample_data$pred)
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 ```
-The association analysis between the gene expression and the predictors can then be conducted using the function ```nebula``` as follows. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells. The function by default fitted the negative binomial gamma mixed model (NBGMM) for each of the genes, and return a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The p-values returned by ```nebula``` are raw p-values (not adjusted for multiple testing).
+The association analysis between the gene expression and the predictors can then be conducted using the ```nebula``` function as follows. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells. The function by default fits the negative binomial gamma mixed model (NBGMM) for each of the genes, and returns a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The p-values returned by ```nebula``` are raw p-values (not adjusted for multiple testing). Users can take advantage of a multicore CPU by specifying the number of cores to use via the ```ncore``` argument. 
 ```{r,echo=TRUE}
-re = nebula(sample_data$count,sample_data$sid,pred=df)
+re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
 re
 ```
 The cells in the count matrix need to be grouped by the subjects (that is, the cells of the same subject should be placed consecutively) before using as the input to the function ```nebula```. If the cells are not grouped, the function ```group_cell``` can be used to first reorder the cells, as shown below. If a scaling factor is specified by the user, it should also be included in ```group_cell```. If the cells are already grouped, ```group_cell``` will return *NULL*.
@@ -213,5 +215,12 @@ The returned object will include an *M* by *L* matrix of the random effects, whe
 ```{r,eval=FALSE,echo=TRUE}
 pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
 ```
+
+## Parallel computing
+
+Starting with version 1.4.0, *nebula* supports parallel computing to accelerate tasks. To specify the number of logical cores (threads), users can use the ```ncore``` argument when running ```nebula```. By default, ```nebula``` uses two cores if more than two cores are available. However, if the specified value for ```ncore``` exceeds the number of available cores, *nebula* will use available cores detected and issue a warning. It's important to note that the maximum number of available processors on a computing cluster may be restricted by the job scheduler's configuration.
+
+While parallel computing significantly improves computational time, users should monitor memory usage when exploiting multiple cores. Insufficient memory allocation to a new thread may cause the R session or job to be terminated by the operating system. 
+
 
 ## References

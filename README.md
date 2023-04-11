@@ -1,4 +1,4 @@
--   [NEBULA v1.3.0](#nebula-v1.3.0)
+-   [NEBULA v1.4.0](#nebula-v1.4.0)
     -   [Overview](#overview)
     -   [Installation](#installation)
         -   [Most recent version](#most-recent-version)
@@ -21,21 +21,23 @@
     -   [Testing contrasts](#testing-contrasts)
     -   [Extracting marginal and conditional Pearson
         residuals](#extracting-marginal-and-conditional-pearson-residuals)
+    -   [Parallel computing](#parallel-computing)
     -   [References](#references)
 
-# NEBULA v1.3.0
+# NEBULA v1.4.0
 
 ## Overview
 
-The R package, *nebula*, provides fast algorithms for fitting negative
-binomial and Poisson mixed models for analyzing large-scale
-multi-subject single-cell data. The package *nebula* accounts for the
-hierarchical structure of the data by decomposing the total
-overdispersion into between-subject and within-subject components using
-a negative binomial mixed model (NBMM). The package nebula can be used
-for e.g., identifying marker genes, testing treatment effects, detecting
-genes with differential expression, performing cell-level co-expression
-analysis, and obtaining Pearson residuals for downstream analyses.
+The *nebula* package is an R package that provides fast algorithms for
+fitting negative binomial and Poisson mixed models for analyzing
+large-scale, multi-subject single-cell data. The package *nebula*
+accounts for the hierarchical structure of the data by decomposing the
+total overdispersion into between-subject and within-subject components
+using a negative binomial mixed model (NBMM). Users can utilize the
+package for various tasks, such as identifying marker genes, testing
+treatment effects, detecting genes with differential expression,
+performing cell-level co-expression analysis, and obtaining Pearson
+residuals for downstream analyses.
 
 More details can be found in (He et al. 2021)
 (<https://www.nature.com/articles/s42003-021-02146-6>).
@@ -52,16 +54,15 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
-Because the package *nebula* uses the R package *Rfast*, the
-installation process may first install *Rfast*, which requires that GSL
-is installed or available in the environment. The installation also
-requires Rcpp-1.0.7 and has been tested on R-4.1.0. Since v1.2.0,
-*nebula* does not support R-3.6 or an older version of R. For R-3.6,
-version 1.1.8 can be installed via R-forge
-(<https://r-forge.r-project.org/R/?group_id=2407>) although it is not
-recommended to use an older version.
+During installation, the *nebula* package may first install the *Rfast*
+package, which requires the presence of GSL in the environment. The
+installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0.
+Starting from version 1.2.0, *nebula* is no longer compatible with R-3.6
+or earlier versions of R. Users who have R-3.6 may install version 1.1.8
+via R-forge (<https://r-forge.r-project.org/R/?group_id=2407>). However,
+it is not recommended to use an older version of *nebula*.
 
-Please contact <lianghe@health.sdu.dk> for more information.
+Please contact <hyx520101@gmail.com> for more information.
 
 ## Functions
 
@@ -80,7 +81,6 @@ set attached to the R package can be loaded as follows.
 
 ``` r
 library(nebula)
-#> Warning: package 'nebula' was built under R version 4.2.1
 data(sample_data)
 ```
 
@@ -290,16 +290,16 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432326 0.9284701 0.08125256 0.8840821
-#> 2  0.07455465 0.9726512 0.07102681 0.9255032
-#> 3  0.17403264 0.9817571 0.17159404 0.9266395
-#> 4  0.05352150 0.8516682 0.05026165 0.8124118
-#> 5  0.07480034 1.3254379 0.07075366 1.2674146
+#> 1  0.08432321 0.9284703 0.08125256 0.8840821
+#> 2  0.07455464 0.9726512 0.07102681 0.9255032
+#> 3  0.17403276 0.9817570 0.17159404 0.9266395
+#> 4  0.05352148 0.8516682 0.05026165 0.8124118
+#> 5  0.07480033 1.3254379 0.07075366 1.2674146
 #> 6  0.12372426 1.1653128 0.12086392 1.1096065
-#> 7  0.07724823 0.9578170 0.07360445 0.9112956
-#> 8  0.13797636 0.7991950 0.13571262 0.7549629
-#> 9  0.05879485 0.8568851 0.05541398 0.8139652
-#> 10 0.09782324 0.9940222 0.09496649 0.9410035
+#> 7  0.07724824 0.9578169 0.07360445 0.9112956
+#> 8  0.13797646 0.7991954 0.13571262 0.7549629
+#> 9  0.05879492 0.8568854 0.05541398 0.8139652
+#> 10 0.09782335 0.9940223 0.09496649 0.9410035
 ```
 
 Such difference has little impact on testing fixed-effects predictors
@@ -309,16 +309,16 @@ under this sample size.
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
+#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
 #> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
+#> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
+#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
 #> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432
+#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
+#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
+#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
+#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
@@ -428,11 +428,11 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 |          -1.903571 | -0.0155809 | -0.0976660 |       0.0511060 |       0.0661297 | 0.0329115 | 0.0655553 |    0.0642299 |              0 | 0.6359142 | 0.1362700 |   0.4262222 |       1 | A    |
 |          -2.047864 | -0.0032670 | -0.0536887 |      -0.0189269 |       0.0644332 | 0.0355074 | 0.0635450 |    0.0694853 |              0 | 0.9266904 | 0.3981703 |   0.7853239 |       2 | B    |
 |          -2.032645 |  0.0179777 |  0.0009387 |      -0.0505390 |       0.0908196 | 0.0345496 | 0.0932449 |    0.0676706 |              0 | 0.6028248 | 0.9919678 |   0.4551611 |       3 | C    |
-|          -2.009746 | -0.0054963 | -0.0278602 |       0.0782074 |       0.0573209 | 0.0350745 | 0.0574459 |    0.0686939 |              0 | 0.8754792 | 0.6276889 |   0.2549156 |       4 | D    |
+|          -2.009746 | -0.0054963 | -0.0278602 |       0.0782074 |       0.0573209 | 0.0350745 | 0.0574459 |    0.0686939 |              0 | 0.8754792 | 0.6276888 |   0.2549156 |       4 | D    |
 |          -1.980528 |  0.0106338 | -0.0248791 |       0.0312190 |       0.0644287 | 0.0343355 | 0.0621576 |    0.0671645 |              0 | 0.7567865 | 0.6889656 |   0.6420644 |       5 | E    |
 |          -1.950451 |  0.0160341 | -0.0134775 |      -0.0345244 |       0.0778198 | 0.0333858 | 0.0738508 |    0.0650410 |              0 | 0.6310363 | 0.8551928 |   0.5955505 |       6 | F    |
 |          -1.970271 | -0.0026753 |  0.0750060 |      -0.0063677 |       0.0645989 | 0.0341936 | 0.0615160 |    0.0668723 |              0 | 0.9376369 | 0.2227329 |   0.9241391 |       7 | G    |
-|          -1.964311 |  0.0141532 | -0.0610984 |      -0.0578672 |       0.0809943 | 0.0336579 | 0.0800990 |    0.0656800 |              0 | 0.6741202 | 0.4455910 |   0.3782927 |       8 | H    |
+|          -1.964311 |  0.0141532 | -0.0610984 |      -0.0578672 |       0.0809943 | 0.0336579 | 0.0800990 |    0.0656800 |              0 | 0.6741201 | 0.4455910 |   0.3782927 |       8 | H    |
 |          -2.074031 | -0.0178190 | -0.0436094 |       0.0259745 |       0.0597947 | 0.0362203 | 0.0587679 |    0.0707912 |              0 | 0.6227459 | 0.4580494 |   0.7136813 |       9 | I    |
 |          -2.046055 |  0.0307026 |  0.0227238 |      -0.0246112 |       0.0714158 | 0.0354844 | 0.0702268 |    0.0691813 |              0 | 0.3869068 | 0.7462578 |   0.7220276 |      10 | J    |
 
@@ -589,6 +589,23 @@ Pearson residuals can be extracted by running `nbresidual` with
 ``` r
 pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
 ```
+
+## Parallel computing
+
+Starting with version 1.4.0, *nebula* supports parallel computing to
+accelerate tasks. To specify the number of logical cores (threads),
+users can use the `ncore` argument when running `nebula`. By default,
+`nebula` uses two cores if more than two cores are available. However,
+if the specified value for `ncore` exceeds the number of available
+cores, *nebula* will use available cores detected and issue a warning.
+It’s important to note that the maximum number of available processors
+on a computing cluster may be restricted by the job scheduler’s
+configuration.
+
+While parallel computing significantly improves computational time,
+users should monitor memory usage when exploiting multiple cores.
+Insufficient memory allocation to a new thread may cause the R session
+or job to be terminated by the operating system.
 
 ## References
 

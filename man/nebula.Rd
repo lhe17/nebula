@@ -20,7 +20,9 @@ nebula(
   cpc = 0.005,
   covariance = FALSE,
   output_re = FALSE,
-  reml = 0
+  reml = 0,
+  ncore = 2,
+  fmaxsize = Inf
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ nebula(
 \item{output_re}{If TRUE, nebula will output the subject-level random effects. Only effective for model='NBGMM' or 'NBLMM'.}
 
 \item{reml}{Either 0 (default) or 1. If it is one, REML will be used to estimate the overdispersions.}
+
+\item{ncore}{The number of cores used for parallel computing.}
+
+\item{fmaxsize}{The maximum allowed total size (in bytes) of global variables (future.globals.maxSize) when using parallel computing.}
 }
 \value{
 summary: The estimated coefficient, standard error and p-value for each predictor.

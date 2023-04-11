@@ -29,7 +29,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 
 ## ----echo=TRUE----------------------------------------------------------------
-re = nebula(sample_data$count,sample_data$sid,pred=df)
+re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
 re
 
 ## ----eval=FALSE,echo=TRUE-----------------------------------------------------
