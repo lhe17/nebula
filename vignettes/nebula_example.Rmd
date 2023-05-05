@@ -4,11 +4,11 @@ author: "Liang He"
 date: "`r Sys.Date()`"
 bibliography: "references.bib"
 output:
-  html_document:
-    toc: yes
   md_document:
     toc: yes
     variant: markdown_github
+  html_document:
+    toc: yes
 vignette: >
   %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data}
   %\VignetteEncoding{UTF-8}
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.4.0
+# NEBULA v1.4.1
 
 ## Overview
 

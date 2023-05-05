@@ -207,8 +207,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       vare = re_t[(nb + 1):(nb + 2)]
       para = vare
       
-      if(ncell>0)
-      {cv2 = get_cv(offset,pred,re_t[1:nb],cell_ind,ncell,nind)}
+      cv2p <- ifelse(ncell>0,get_cv(offset,pred,re_t[1:nb],cell_ind,ncell,nind),cv2)
       
       gni = mfs * vare[2]
       
@@ -232,7 +231,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
             fit = 2
            
           }else{
-            kappa_obs = gni/(1+cv2)
+            kappa_obs = gni/(1+cv2p)
             # if ((gni/(1+cv2)) < kappa)
             if((kappa_obs<20)|((kappa_obs<kappa)&(vare[1]<(8/kappa_obs))))
             {
