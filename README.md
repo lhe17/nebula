@@ -6,6 +6,9 @@
     -   <a href="#functions" id="toc-functions">Functions</a>
     -   <a href="#basic-usage" id="toc-basic-usage">Basic usage</a>
         -   <a href="#example" id="toc-example">Example</a>
+        -   <a href="#Using Seurat/SingleCellExperiment Objects"
+            id="toc-using-seurat/singleCellExperiment-objects"> 
+            Using Seurat/SingleCellExperiment Objects</a>
     -   <a href="#specifying-scaling-factors"
         id="toc-specifying-scaling-factors">Specifying scaling factors</a>
         -   <a href="#example-1" id="toc-example-1">Example</a>
@@ -83,6 +86,8 @@ The current version provides the following functions.
     matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
 -   `nbresidual`: extracts Pearson residuals from the fitted model.
+-   `scToNeb`: converts a single-cell count matrix from `Seurat` or 
+    `SingleCellExperiment` to a list.
 
 ## Basic usage
 
@@ -256,6 +261,34 @@ re = nebula(data_g$count,data_g$id,pred=data_g$pred)
 If `pred` is not specified, `nebula` will fit the model with an
 intercept term by default. This can be used when only the
 overdispersions are of interest.
+
+## Using Seurat/SingleCellExperiment Objects
+
+If a single cell data processing package such as `Seurat` or 
+`SingleCellExperiment` was used, nebula can be easily implemented using 
+the assistance of the helper function `scToNeb`. Assuming object 
+metadata relevant to subject ids and predictors are available in the 
+object, `scToNeb` can retrieve and organize these objects and output 
+a list that is similar to the list provided in this vignette. With 
+`Seurat` objects, the assay can also be specified to fit data from
+other assays.
+
+### Example
+
+```r
+library(nebula)
+seu_obj <- readRDS("seurat_object.rds")
+re <- seu_to_neb(obj = seu_obj, assay = "RNA", sid = "sample",
+                 pred = c("sex", "genotype", "breed"),
+                 offset = "TMM")
+```
+
+The output will be a list with the first element containg `counts`, 
+the second containing a `data.frame` with all listed predictors, 
+and the third containng a character vector with all subject ids. 
+If subject ids are unordered, `group_cell` can be used. Users 
+can also input scaling factors that may be stored within the 
+object's metadata as a string in the `offset` argument. 
 
 ## Specifying scaling factors
 
