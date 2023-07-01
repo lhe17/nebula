@@ -60,7 +60,7 @@ scToNeb <- function(obj, assay = NULL, id = NULL, pred = NULL, offset = NULL, ve
 #' library(Seurat)
 #' library(nebula)
 #' seu_obj <- readRDS("seurat_object.rds")
-#' re <- seu_to_neb(obj = seu_obj, assay = "RNA", sid = "sample", pred = c("sex", "genotype", "breed"))
+#' re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "sample", pred = c("sex", "genotype", "breed"))
 #'
 
 

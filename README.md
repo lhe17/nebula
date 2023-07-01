@@ -326,7 +326,7 @@ other assays.
 ```r
 library(nebula)
 seu_obj <- readRDS("seurat_object.rds")
-re <- seu_to_neb(obj = seu_obj, assay = "RNA", sid = "sample",
+re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "sample",
                  pred = c("sex", "genotype", "breed"),
                  offset = "TMM")
 ```
