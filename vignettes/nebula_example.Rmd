@@ -4,11 +4,11 @@ author: "Liang He"
 date: "`r Sys.Date()`"
 bibliography: "references.bib"
 output:
+  html_document:
+    toc: yes
   md_document:
     toc: yes
     variant: markdown_github
-  html_document:
-    toc: yes
 vignette: >
   %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data}
   %\VignetteEncoding{UTF-8}
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.4.1
+# NEBULA v1.4.2
 
 ## Overview
 
@@ -66,7 +66,7 @@ The example data set includes a count matrix of 6030 cells and 10 genes from 30 
 ```{r,echo=TRUE}
 dim(sample_data$count)
 ```
-The count matrix can be a matrix object or a sparse dgCMatrix object. The elements should be integers. 
+The count matrix can be a matrix object or a sparse dgCMatrix object (the same format as in ```Seurat```). The elements should be integers. 
 
 ```{r,echo=TRUE}
 sample_data$count[1:5,1:5]
@@ -103,7 +103,9 @@ The scaling factor for each cell is specified in ```nebula``` using the argument
 
 ### Example
 ```{r,eval=FALSE,echo=TRUE}
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+library(Matrix)
+# An example of using the library size of each cell as the scaling factor
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 ```
 
 ## Difference between NEBULA-LN and NEBULA-HL
@@ -132,7 +134,16 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
 
 ## Checking convergence for the summary statistics and quality control
 
-*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code $\leq$ -20 suggests that the algorithm does not converge well. If the convergence code is -30, which indicates a failure of convergence, their summary statistics should NOT be used. If the convergence code is -20 or -40, it indicates that the optimization algorithm stops at the maximum step limit before the complete convergence. The results should be interpreted with caution in this case. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions, in which case the likelihood is flat or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) may solve the problem. 
+*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code $\leq$ -20 suggests that the algorithm does not converge well. The results should be interpreted with caution in these cases. The detailed information about the convergence codes is listed below. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions. In these cases, the likelihood can be flat, might reach the maximum at the infinity, or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) may solve the problem. 
+
+* Information about the convergence code:
+  + 1: The convergence is reached due to a sufficiently small improvement of the function value.
+  + -10: The convergence is reached because the gradients are close to zero (i.e., the critical point) and no improvement of the function value can be found.
+  + (!) -20: The optimization algorithm stops before the convergence because the maximum number of iterations is reached.
+  + (!) -25: The Hessian matrix is either almost singular or not positive definite.
+  + (!) -30: The convergence fails because the likelihood function returns NaN.  
+  + (!) -40: The convergence fails because the critical point is not reached and no improvement of the function value can be found.
+  + (!) -50: Only used for the PMM, indicating a failure of convergence.
 
 Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noises. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but more common in e.g., SMART-seq2 as PCR duplicates introduce substantial noises. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in [@He_2021], genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well.
 
