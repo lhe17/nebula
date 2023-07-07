@@ -10,7 +10,8 @@
 #' @param min Minimum values for the overdispersions parameters \eqn{\sigma^2} and \eqn{\phi}. Must be positive. The default is c(1e-4,1e-4).
 #' @param max Maximum values for the overdispersions parameters \eqn{\sigma^2} and \eqn{\phi}. Must be positive. The default is c(10,1000).
 #' @param kappa Please see the vignettes for more details. The default is 800.
-#' @param cpc A non-negative threshold for filtering low-expressed genes. Genes with counts per cell smaller than the specified value will not be analyzed. 
+#' @param cpc A non-negative threshold for filtering low-expression genes. Genes with counts per cell smaller than the specified value will not be analyzed. 
+#' @param mincp A positive integer threshold for filtering low-expression genes. A gene will not be analyzed if its number of cells that have a non-zero count is smaller than the specified value . 
 #' @param cutoff_cell The data will be refit using NEBULA-HL to estimate both overdispersions if the product of the cells per subject and the estimated cell-level overdispersion parameter \eqn{\phi} is smaller than cutoff_cell. The default is 20.
 #' @param opt 'lbfgs' or 'trust'. Specifying the optimization algorithm used in NEBULA-LN. The default is 'lbfgs'. If it is 'trust', a trust region algorithm based on the Hessian matrix will be used for optimization.
 #' @param verbose An optional logical scalar indicating whether to print additional messages. Default is FALSE.
@@ -21,7 +22,7 @@
 #' @param fmaxsize The maximum allowed total size (in bytes) of global variables (future.globals.maxSize) when using parallel computing.
 #' @return summary: The estimated coefficient, standard error and p-value for each predictor.
 #' @return overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
-#' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or -30 indicates a potential failure of the convergence.    
+#' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or lower indicates a potential failure of the convergence. A value of one indicates that the convergence is reached due to a sufficiently small improvement of the function value. A value of -10 indicates that the convergence is reached because the gradients are close to zero (i.e., the critical point) and no improvement of the function value can be found.    
 #' @return algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
 #' @return covariance: The covariance matrix for the estimated log(FC).
 #' @return random_effect: The subject-level random effects.
@@ -36,11 +37,10 @@
 
 nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max = c(10,1000), 
                    model = 'NBGMM', method = "LN", cutoff_cell = 20, kappa=800, opt='lbfgs',
-                   verbose = TRUE, cpc = 0.005, covariance = FALSE, output_re = FALSE, reml = 0, ncore = 2, fmaxsize = Inf)
+                   verbose = TRUE, cpc = 0.005, mincp = 5, covariance = FALSE, output_re = FALSE, reml = 0, ncore = 2, fmaxsize = Inf)
 {
-  # reml = 0
   reml <- check_reml(reml,model)
-  # os <- Sys.info()['sysname'] 
+  
   maxcore <- max(c(1, availableCores() - 1))
   if(ncore>maxcore)
   {
@@ -85,6 +85,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     {stop("The design matrix must include an intercept term.")}
     intcol = which(sds==0)
     pred = as.matrix(pred$pred)
+    if(Matrix::rankMatrix(pred)<ncol(pred))
+    {warning("Some predictors in the design matrix are collinear or linearly dependent. The effects of these predictors are not identifiable.")}
     if(nrow(pred)!=nind)
     {stop('The number of rows of the design matrix should be equal to the number of columns of the count matrix.')}
   }
@@ -146,8 +148,10 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     cumsumy = matrix(cumsumy, ncol = k)
   }
   posind = lapply(1:ngene, function(x) which(cumsumy[x, ] > 0))
+  gid2 = which(tabulate(count@i + 1L, ngene) >= mincp)
   count = Matrix::t(count)
   gid = which((rowSums(cumsumy)/nind) > cpc)
+  gid = intersect(gid,gid2)
   lgid = length(gid)
   if (verbose == TRUE) {
     cat("Remove ", ngene-lgid, " genes having low expression.\n")
@@ -301,30 +305,24 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         repml = opt_pml_nbm(pred, offset, posv$Y, fid-1, cumsumy[i, ], posind[[i]]-1,posv$posindy, nb, nind, k, betae,vare, reml, 1e-06,1)
       }
       
-      if(is.nan(repml$loglik))
-      {conv = -30}else{
-        if(repml$iter==50)
-        {
-          conv = -20
-        }else{
-          if(repml$damp==11)
-          {conv = -10}else{
-            if(repml$damp==12)
-            {conv = -40}
-          }
-        }
+      conv = check_conv(repml, conv)
+      fccov = matrix(NA,nb,nb)
+      if(conv != -25)
+      {
+        fccov = Rfast::spdinv(repml$var)
       }
-      restemp = c(repml$beta, vare[1],1/vare[2], diag(repml$var),conv,fit)
+      
+      restemp = c(repml$beta, vare[1],1/vare[2], diag(fccov),conv,fit)
       if(covariance==TRUE)
       {
-        restemp = c(restemp,repml$var[lower.tri(repml$var, diag = TRUE)])
+        restemp = c(restemp,fccov[lower.tri(fccov, diag = TRUE)])
       }
       if(output_re==TRUE)
       {
         restemp = c(restemp,repml$logw)
       }
       restemp
-    #})
+    
     }
   }else {
       registerDoFuture()
@@ -349,16 +347,32 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         
         hes = pmg_hes(re_t$par,posindy = posv$posindy,X = pred, offset = offset, Y = posv$Y,fid = fid, cumsumy = cumsumy[i, ], posind = posind[[i]],nb = nb, k = k, nind = nind)
         
+        conv = 1
+        if(is.null(re_t$objective))
+        {
+          if(re_t$convergence<0)
+          {conv = -50}
+        }else{
+          if(re_t$convergence!=0)
+          {conv = -50}
+        }
         var_re = rep(NA, npar)
         nnaind = (!is.nan(diag(hes))) & (re_t$par != lower) & (re_t$par != upper)
-        covfix = solve(-hes[nnaind, nnaind])
-        var_re[nnaind] = diag(covfix)
+        # if(min(eigen(-hes[nnaind, nnaind])$values)>1e-8)
+        if(RSpectra::eigs_sym(-hes[nnaind, nnaind],1,which='SA')$values[1] > 1e-8)
+        {
+          covfix = solve(-hes[nnaind, nnaind])
+          var_re[nnaind] = diag(covfix)
+        }else{
+          conv = -25
+        }
         
-        restemp = c(re_t$par, var_re[1:nb],1,5)
+        restemp = c(re_t$par, var_re[1:nb],conv,5)
         if(covariance==TRUE)
         {
           tempv = matrix(NA,npar,npar)
-          tempv[nnaind, nnaind] = covfix
+          if(conv != -25)
+          {tempv[nnaind, nnaind] = covfix}
           tempv = tempv[1:nb,1:nb]
           restemp = c(restemp, tempv[lower.tri(tempv, diag = TRUE)])
         }

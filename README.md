@@ -1,4 +1,4 @@
--   <a href="#nebula-v1.4.1" id="toc-nebula-v1.4.1">NEBULA v1.4.1</a>
+-   <a href="#nebula-v1.4.2" id="toc-nebula-v1.4.2">NEBULA v1.4.2</a>
     -   <a href="#overview" id="toc-overview">Overview</a>
     -   <a href="#installation" id="toc-installation">Installation</a>
         -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
@@ -38,7 +38,7 @@
         computing</a>
     -   <a href="#references" id="toc-references">References</a>
 
-# NEBULA v1.4.1
+# NEBULA v1.4.2
 
 ## Overview
 
@@ -108,8 +108,8 @@ dim(sample_data$count)
 #> [1]   10 6176
 ```
 
-The count matrix can be a matrix object or a sparse dgCMatrix object.
-The elements should be integers.
+The count matrix can be a matrix object or a sparse dgCMatrix object
+(the same format as in `Seurat`). The elements should be integers.
 
 ``` r
 sample_data$count[1:5,1:5]
@@ -307,7 +307,9 @@ counts, it is not recommended to use a normalized count matrix for
 ### Example
 
 ``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+library(Matrix)
+# An example of using the library size of each cell as the scaling factor
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 ```
 
 ## Difference between NEBULA-LN and NEBULA-HL
@@ -413,18 +415,32 @@ for each gene along with the summary statistics. This is useful and
 important information for quality control to filter out genes of which
 the estimation procedure potentially does not converge. Generally, a
 convergence code ≤ -20 suggests that the algorithm does not converge
-well. If the convergence code is -30, which indicates a failure of
-convergence, their summary statistics should NOT be used. If the
-convergence code is -20 or -40, it indicates that the optimization
-algorithm stops at the maximum step limit before the complete
-convergence. The results should be interpreted with caution in this
-case. The failure of convergence may occur when the sample size is very
-small, there are too few positive counts, or the gene has huge
-overdispersions, in which case the likelihood is flat or the
-optimization is sensitive to the initial values. For those genes that
-have a bad convergence code, in many cases, trying a different negative
-binomial mixed model (e.g., NBLMM, see below for more details) may solve
-the problem.
+well. The results should be interpreted with caution in these cases. The
+detailed information about the convergence codes is listed below. The
+failure of convergence may occur when the sample size is very small,
+there are too few positive counts, or the gene has huge overdispersions.
+In these cases, the likelihood can be flat, might reach the maximum at
+the infinity, or the optimization is sensitive to the initial values.
+For those genes that have a bad convergence code, in many cases, trying
+a different negative binomial mixed model (e.g., NBLMM, see below for
+more details) may solve the problem.
+
+-   Information about the convergence code:
+    -   1: The convergence is reached due to a sufficiently small
+        improvement of the function value.
+    -   -10: The convergence is reached because the gradients are close
+        to zero (i.e., the critical point) and no improvement of the
+        function value can be found.
+    -   (!) -20: The optimization algorithm stops before the convergence
+        because the maximum number of iterations is reached.
+    -   (!) -25: The Hessian matrix is either almost singular or not
+        positive definite.
+    -   (!) -30: The convergence fails because the likelihood function
+        returns NaN.  
+    -   (!) -40: The convergence fails because the critical point is not
+        reached and no improvement of the function value can be found.
+    -   (!) -50: Only used for the PMM, indicating a failure of
+        convergence.
 
 Depending on the concrete application, the estimated gene-specific
 overdispersions can also be taken into consideration in quality control.

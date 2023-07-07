@@ -37,7 +37,9 @@ re
 #  re = nebula(data_g$count,data_g$id,pred=data_g$pred)
 
 ## ----eval=FALSE,echo=TRUE-----------------------------------------------------
-#  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+#  library(Matrix)
+#  # An example of using the library size of each cell as the scaling factor
+#  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')

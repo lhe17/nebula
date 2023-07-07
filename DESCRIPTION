@@ -1,15 +1,15 @@
 Package: nebula
 Type: Package
 Title: Negative Binomial Mixed Models Using Large-Sample Approximation for Differential Expression Analysis of ScRNA-Seq Data
-Version: 1.4.1
-Date: 2023-05-05
+Version: 1.4.2
+Date: 2023-07-03
 Author: Liang He
 Maintainer: Liang He <hyx520101@gmail.com>
 Description: A fast negative binomial mixed model for conducting association analysis of multi-subject single-cell data. It can be used for identifying marker genes, differential expression and co-expression analyses. The model includes subject-level random effects to account for the hierarchical structure in multi-subject single-cell data. See He et al. (2021) <doi:10.1038/s42003-021-02146-6>.  
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.7), nloptr, stats, Matrix, methods, Rfast, trust, doFuture (>= 0.12.2), future (>= 1.32.0), foreach (>= 1.5.2), doRNG (>= 1.8.6)
+Imports: Rcpp (>= 1.0.7), nloptr, stats, Matrix, methods, RSpectra, Rfast, trust, doFuture (>= 0.12.2), future (>= 1.32.0), foreach (>= 1.5.2), doRNG (>= 1.8.6)
 LinkingTo: Rcpp, RcppEigen
 Depends: R (>= 4.1)
 RoxygenNote: 7.2.3
