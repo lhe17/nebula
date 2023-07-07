@@ -281,7 +281,7 @@ comprised of pancreatic cells across eight samples.
 library(nebula)
 library(Seurat)
 
-seu_obj <- data("sample_seurat")
+data("sample_seurat")
 re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "replicate",
               pred = c("celltype", "tech"))
 ```
