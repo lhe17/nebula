@@ -319,16 +319,19 @@ metadata relevant to subject ids and predictors are available in the
 object, `scToNeb` can retrieve and organize these objects and output 
 a list that is similar to the list provided in this vignette. With 
 `Seurat` objects, the assay can also be specified to fit data from
-other assays.
+other assays. The ```nebula``` package contains a sample Seurat object
+obtained from [@seurat_object] (https://github.com/satijalab/seurat-data) 
+comprised of pancreatic cells across eight samples.
 
 ### Example
 
 ```r
 library(nebula)
-seu_obj <- readRDS("seurat_object.rds")
-re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "sample",
-                 pred = c("sex", "genotype", "breed"),
-                 offset = "TMM")
+library(Seurat)
+
+seu_obj <- data("sample_seurat")
+re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "replicate",
+              pred = c("celltype", "tech"))
 ```
 
 The output will be a list with the first element containg `counts`, 
