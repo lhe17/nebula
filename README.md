@@ -1,4 +1,4 @@
--   <a href="#nebula-v1.4.1" id="toc-nebula-v1.4.1">NEBULA v1.4.1</a>
+-   <a href="#nebula-v1.4.2" id="toc-nebula-v1.4.2">NEBULA v1.4.2</a>
     -   <a href="#overview" id="toc-overview">Overview</a>
     -   <a href="#installation" id="toc-installation">Installation</a>
         -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
@@ -6,6 +6,9 @@
     -   <a href="#functions" id="toc-functions">Functions</a>
     -   <a href="#basic-usage" id="toc-basic-usage">Basic usage</a>
         -   <a href="#example" id="toc-example">Example</a>
+        -   <a href="#Using Seurat/SingleCellExperiment Objects"
+            id="toc-using-seurat/singleCellExperiment-objects"> 
+            Using Seurat/SingleCellExperiment Objects</a>
     -   <a href="#specifying-scaling-factors"
         id="toc-specifying-scaling-factors">Specifying scaling factors</a>
         -   <a href="#example-1" id="toc-example-1">Example</a>
@@ -35,7 +38,7 @@
         computing</a>
     -   <a href="#references" id="toc-references">References</a>
 
-# NEBULA v1.4.1
+# NEBULA v1.4.2
 
 ## Overview
 
@@ -83,6 +86,8 @@ The current version provides the following functions.
     matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
 -   `nbresidual`: extracts Pearson residuals from the fitted model.
+-   `scToNeb`: converts a single-cell count matrix from `Seurat` or 
+    `SingleCellExperiment` to a list.
 
 ## Basic usage
 
@@ -103,8 +108,8 @@ dim(sample_data$count)
 #> [1]   10 6176
 ```
 
-The count matrix can be a matrix object or a sparse dgCMatrix object.
-The elements should be integers.
+The count matrix can be a matrix object or a sparse dgCMatrix object
+(the same format as in `Seurat`). The elements should be integers.
 
 ``` r
 sample_data$count[1:5,1:5]
@@ -257,6 +262,37 @@ If `pred` is not specified, `nebula` will fit the model with an
 intercept term by default. This can be used when only the
 overdispersions are of interest.
 
+## Using Seurat/SingleCellExperiment Objects
+
+If a single cell data processing package such as `Seurat` or 
+`SingleCellExperiment` was used, nebula can be easily implemented using 
+the assistance of the helper function `scToNeb`. Assuming object 
+metadata relevant to subject ids and predictors are available in the 
+object, `scToNeb` can retrieve and organize these objects and output 
+a list that is similar to the list provided in this vignette. With 
+`Seurat` objects, the assay can also be specified to fit data from
+other assays. The ```nebula``` package contains a sample Seurat object
+obtained from [@seurat_object] (https://github.com/satijalab/seurat-data) 
+comprised of pancreatic cells across eight samples.
+
+### Example
+
+```r
+library(nebula)
+library(Seurat)
+
+data("sample_seurat")
+re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "replicate",
+              pred = c("celltype", "tech"))
+```
+
+The output will be a list with the first element containg `counts`, 
+the second containing a `data.frame` with all listed predictors, 
+and the third containng a character vector with all subject ids. 
+If subject ids are unordered, `group_cell` can be used. Users 
+can also input scaling factors that may be stored within the 
+object's metadata as a string in the `offset` argument. 
+
 ## Specifying scaling factors
 
 The scaling factor for each cell is specified in `nebula` using the
@@ -274,7 +310,9 @@ counts, it is not recommended to use a normalized count matrix for
 ### Example
 
 ``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+library(Matrix)
+# An example of using the library size of each cell as the scaling factor
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 ```
 
 ## Difference between NEBULA-LN and NEBULA-HL
@@ -380,18 +418,32 @@ for each gene along with the summary statistics. This is useful and
 important information for quality control to filter out genes of which
 the estimation procedure potentially does not converge. Generally, a
 convergence code ≤ -20 suggests that the algorithm does not converge
-well. If the convergence code is -30, which indicates a failure of
-convergence, their summary statistics should NOT be used. If the
-convergence code is -20 or -40, it indicates that the optimization
-algorithm stops at the maximum step limit before the complete
-convergence. The results should be interpreted with caution in this
-case. The failure of convergence may occur when the sample size is very
-small, there are too few positive counts, or the gene has huge
-overdispersions, in which case the likelihood is flat or the
-optimization is sensitive to the initial values. For those genes that
-have a bad convergence code, in many cases, trying a different negative
-binomial mixed model (e.g., NBLMM, see below for more details) may solve
-the problem.
+well. The results should be interpreted with caution in these cases. The
+detailed information about the convergence codes is listed below. The
+failure of convergence may occur when the sample size is very small,
+there are too few positive counts, or the gene has huge overdispersions.
+In these cases, the likelihood can be flat, might reach the maximum at
+the infinity, or the optimization is sensitive to the initial values.
+For those genes that have a bad convergence code, in many cases, trying
+a different negative binomial mixed model (e.g., NBLMM, see below for
+more details) may solve the problem.
+
+-   Information about the convergence code:
+    -   1: The convergence is reached due to a sufficiently small
+        improvement of the function value.
+    -   -10: The convergence is reached because the gradients are close
+        to zero (i.e., the critical point) and no improvement of the
+        function value can be found.
+    -   (!) -20: The optimization algorithm stops before the convergence
+        because the maximum number of iterations is reached.
+    -   (!) -25: The Hessian matrix is either almost singular or not
+        positive definite.
+    -   (!) -30: The convergence fails because the likelihood function
+        returns NaN.  
+    -   (!) -40: The convergence fails because the critical point is not
+        reached and no improvement of the function value can be found.
+    -   (!) -50: Only used for the PMM, indicating a failure of
+        convergence.
 
 Depending on the concrete application, the estimated gene-specific
 overdispersions can also be taken into consideration in quality control.

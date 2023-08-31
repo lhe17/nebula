@@ -1206,7 +1206,8 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
 
   return Rcpp::List::create(Rcpp::Named("beta") = beta,
                             Rcpp::Named("logw") = logw,
-                            Rcpp::Named("var") = vb2.inverse(),
+                            // Rcpp::Named("var") = vb2.inverse(),
+                            Rcpp::Named("var") = vb2,
                             Rcpp::Named("loglik") = loglik,
                             Rcpp::Named("loglikp") = loglikp,
                             Rcpp::Named("logdet") = logdet,
@@ -1455,7 +1456,8 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
 
   return Rcpp::List::create(Rcpp::Named("beta") = beta,
                             Rcpp::Named("logw") = logw,
-                            Rcpp::Named("var") = vb2.inverse(),
+                            //Rcpp::Named("var") = vb2.inverse(),
+                            Rcpp::Named("var") = vb2,
                             Rcpp::Named("loglik") = loglik,
                             Rcpp::Named("loglikp") = loglikp,
                             Rcpp::Named("logdet") = logdet,
