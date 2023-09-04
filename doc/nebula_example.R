@@ -29,7 +29,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 
 ## ----echo=TRUE----------------------------------------------------------------
-re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
+re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 re
 
 ## ----eval=FALSE,echo=TRUE-----------------------------------------------------
@@ -41,9 +41,19 @@ re
 #  # An example of using the library size of each cell as the scaling factor
 #  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 
+## ----echo=TRUE,eval=FALSE-----------------------------------------------------
+#  library(nebula)
+#  data("sample_seurat")
+#  seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
+#  ## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
+#  df = model.matrix(~celltype+tech, data=seuratdata$pred)
+#  ## include only the first two cell types in the model to avoid separation due to too many binary variables
+#  data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c("(Intercept)","celltypeactivated_stellate","techcelseq2","techfluidigmc1","techindrop", "techsmartseq2")],offset=seuratdata$offset)
+#  re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)
+
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
-re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL')
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
+re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 
@@ -52,17 +62,17 @@ cbind(re_hl$overdispersion,re_ln$overdispersion)
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM')
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM',ncore=1)
 
 ## ----echo=FALSE,results='asis'------------------------------------------------
 knitr::kable(re$summary)
 
-## ----eval=TRUE,echo=TRUE------------------------------------------------------
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1)
+## ----eval=FALSE,echo=TRUE-----------------------------------------------------
+#  re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1,ncore=1)
 
 ## ----eval=TRUE,echo=TRUE------------------------------------------------------
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
 cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
@@ -73,7 +83,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 ## the gene to test
 gene_i = 1
 ## output covariance
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])

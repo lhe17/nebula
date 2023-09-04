@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2023-07-05" />
+<meta name="date" content="2023-09-04" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -375,13 +375,13 @@ display: none;
 <h1 class="title toc-ignore">A fast negative binomial mixed model for
 analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2023-07-05</h4>
+<h4 class="date">2023-09-04</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#nebula-v1.4.2" id="toc-nebula-v1.4.2">NEBULA v1.4.2</a>
+<li><a href="#nebula-v1.5.0" id="toc-nebula-v1.5.0">NEBULA v1.5.0</a>
 <ul>
 <li><a href="#overview" id="toc-overview">Overview</a></li>
 <li><a href="#installation" id="toc-installation">Installation</a>
@@ -398,6 +398,11 @@ recent version</a></li>
 <ul>
 <li><a href="#example-1" id="toc-example-1">Example</a></li>
 </ul></li>
+<li><a href="#using-seuratsinglecellexperiment-objects" id="toc-using-seuratsinglecellexperiment-objects">Using
+Seurat/SingleCellExperiment Objects</a>
+<ul>
+<li><a href="#example-2" id="toc-example-2">Example</a></li>
+</ul></li>
 <li><a href="#difference-between-nebula-ln-and-nebula-hl" id="toc-difference-between-nebula-ln-and-nebula-hl">Difference between
 NEBULA-LN and NEBULA-HL</a></li>
 <li><a href="#filtering-low-expression-genes" id="toc-filtering-low-expression-genes">Filtering low-expression
@@ -406,12 +411,12 @@ genes</a></li>
 convergence for the summary statistics and quality control</a></li>
 <li><a href="#using-other-mixed-models" id="toc-using-other-mixed-models">Using other mixed models</a>
 <ul>
-<li><a href="#example-2" id="toc-example-2">Example</a></li>
+<li><a href="#example-3" id="toc-example-3">Example</a></li>
 </ul></li>
 <li><a href="#special-attention-paid-to-testing-subject-level-variables" id="toc-special-attention-paid-to-testing-subject-level-variables">Special
 attention paid to testing subject-level variables</a>
 <ul>
-<li><a href="#example-3" id="toc-example-3">Example</a></li>
+<li><a href="#example-4" id="toc-example-4">Example</a></li>
 </ul></li>
 <li><a href="#testing-contrasts" id="toc-testing-contrasts">Testing
 contrasts</a></li>
@@ -424,8 +429,8 @@ computing</a></li>
 </ul>
 </div>
 
-<div id="nebula-v1.4.2" class="section level1">
-<h1>NEBULA v1.4.2</h1>
+<div id="nebula-v1.5.0" class="section level1">
+<h1>NEBULA v1.5.0</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>The <em>nebula</em> package is an R package that provides fast
@@ -470,6 +475,8 @@ given a count matrix and subject IDs.</li>
 IDs.</li>
 <li><code>nbresidual</code>: extracts Pearson residuals from the fitted
 model.</li>
+<li><code>scToNeb</code>: retrieves data from <code>Seurat</code> or
+<code>SingleCellExperiment</code> for calling <code>nebula</code>.</li>
 </ul>
 </div>
 <div id="basic-usage" class="section level2">
@@ -540,9 +547,12 @@ and cell-level overdispersions (<span class="math inline">\(\sigma^2\)</span> an
 <code>nebula</code> are raw p-values (not adjusted for multiple
 testing). Users can take advantage of a multicore CPU by specifying the
 number of cores to use via the <code>ncore</code> argument.</p>
-<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
+<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
+#&gt; Loading required package: foreach
+#&gt; Loading required package: future
+#&gt; Loading required package: rngtools
 re
 #&gt; $summary
 #&gt;    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
@@ -643,6 +653,39 @@ recommended to use a normalized count matrix for
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))</code></pre>
 </div>
 </div>
+<div id="using-seuratsinglecellexperiment-objects" class="section level2">
+<h2>Using Seurat/SingleCellExperiment Objects</h2>
+<p>If a single cell data processing package such as <code>Seurat</code>
+or <code>SingleCellExperiment</code> was used, nebula can be easily
+implemented using the assistance of the helper function
+<code>scToNeb</code>. Assuming that the metadata relevant to subject IDs
+and predictors are available in the object, <code>scToNeb</code> can
+retrieve and organize these objects and output a list that is similar to
+the example data provided in this vignette. For a
+<code>SingleCellExperiment</code> object, <code>assay</code> is not
+required. For a <code>Seurat</code> object, <code>assay</code> can also
+be specified to fit data from other assays. The <code>nebula</code>
+package contains a sample Seurat object obtained from <span class="citation">(Lab 2019)</span> (<a href="https://github.com/satijalab/seurat-data" class="uri">https://github.com/satijalab/seurat-data</a>) comprised of
+pancreatic cells across eight samples.</p>
+<div id="example-2" class="section level3">
+<h3>Example</h3>
+<pre class="r"><code>library(nebula)
+data(&quot;sample_seurat&quot;)
+seuratdata &lt;- scToNeb(obj = sample_seurat, assay = &quot;RNA&quot;, id = &quot;replicate&quot;, pred = c(&quot;celltype&quot;,&quot;tech&quot;), offset=&quot;nCount_RNA&quot;)
+## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
+df = model.matrix(~celltype+tech, data=seuratdata$pred)
+## include only the first two cell types in the model to avoid separation due to too many binary variables
+data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c(&quot;(Intercept)&quot;,&quot;celltypeactivated_stellate&quot;,&quot;techcelseq2&quot;,&quot;techfluidigmc1&quot;,&quot;techindrop&quot;, &quot;techsmartseq2&quot;)],offset=seuratdata$offset)
+re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)</code></pre>
+<p>The output will be a list with the first element containing
+<code>counts</code>, the second containing a <code>data.frame</code>
+with all listed predictors, the third containing a character vector with
+all subject IDs, and the fourth containing the normalizing factor. Users
+can also use other scaling factors that may be stored within the
+object’s metadata as a string in the <code>offset</code> argument. If
+subject ids are un-ordered, <code>group_cell</code> can be used.</p>
+</div>
+</div>
 <div id="difference-between-nebula-ln-and-nebula-hl" class="section level2">
 <h2>Difference between NEBULA-LN and NEBULA-HL</h2>
 <p>In <em>nebula</em>, a user can choose one of the two algorithms to
@@ -658,40 +701,40 @@ estimating the cell-level overdispersion.</p>
 cells per subject, the difference of the estimated cell-level
 overdispersions between NEBULA-LN and NEBULA-HL is ~5% for most
 genes.</p>
-<pre class="r"><code>re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;)
+<pre class="r"><code>re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
-re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;HL&#39;)
+re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;HL&#39;,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt;       Subject      Cell    Subject      Cell
-#&gt; 1  0.08432321 0.9284703 0.08125256 0.8840821
-#&gt; 2  0.07455464 0.9726512 0.07102681 0.9255032
-#&gt; 3  0.17403276 0.9817570 0.17159404 0.9266395
-#&gt; 4  0.05352148 0.8516682 0.05026165 0.8124118
-#&gt; 5  0.07480033 1.3254379 0.07075366 1.2674146
+#&gt; 1  0.08432326 0.9284701 0.08125256 0.8840821
+#&gt; 2  0.07455465 0.9726512 0.07102681 0.9255032
+#&gt; 3  0.17403264 0.9817571 0.17159404 0.9266395
+#&gt; 4  0.05352150 0.8516682 0.05026165 0.8124118
+#&gt; 5  0.07480034 1.3254379 0.07075366 1.2674146
 #&gt; 6  0.12372426 1.1653128 0.12086392 1.1096065
-#&gt; 7  0.07724824 0.9578169 0.07360445 0.9112956
-#&gt; 8  0.13797646 0.7991954 0.13571262 0.7549629
-#&gt; 9  0.05879492 0.8568854 0.05541398 0.8139652
-#&gt; 10 0.09782335 0.9940223 0.09496649 0.9410035</code></pre>
+#&gt; 7  0.07724823 0.9578170 0.07360445 0.9112956
+#&gt; 8  0.13797636 0.7991950 0.13571262 0.7549629
+#&gt; 9  0.05879485 0.8568851 0.05541398 0.8139652
+#&gt; 10 0.09782324 0.9940222 0.09496649 0.9410035</code></pre>
 <p>Such difference has little impact on testing fixed-effects predictors
 under this sample size.</p>
 <pre class="r"><code>## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #&gt;         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#&gt; 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+#&gt; 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
 #&gt; 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#&gt; 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
-#&gt; 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
+#&gt; 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
+#&gt; 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
 #&gt; 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #&gt; 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#&gt; 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
-#&gt; 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
-#&gt; 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
-#&gt; 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432</code></pre>
+#&gt; 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
+#&gt; 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
+#&gt; 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
+#&gt; 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432</code></pre>
 <p>The bias of NEBULA-LN in estimating the cell-level overdispersion
 gets larger when the CPS value becomes lower or the gene expression is
 more sparse. If the CPS value is &lt;30, <code>nebula</code> will set
@@ -806,9 +849,9 @@ distribution. The PMM is the fastest among these models. Note that the
 Poisson mixed model (PMM) should not be used to test a cell-level
 predictor because it only estimates the subject-level overdispersion.
 Here is an example of using the PMM to fit the example data set.</p>
-<div id="example-2" class="section level3">
+<div id="example-3" class="section level3">
 <h3>Example</h3>
-<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;PMM&#39;)
+<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;PMM&#39;,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.</code></pre>
 <table>
@@ -906,7 +949,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">0.0686939</td>
 <td align="right">0</td>
 <td align="right">0.8754792</td>
-<td align="right">0.6276888</td>
+<td align="right">0.6276889</td>
 <td align="right">0.2549156</td>
 <td align="right">4</td>
 <td align="left">D</td>
@@ -969,7 +1012,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">0.0800990</td>
 <td align="right">0.0656800</td>
 <td align="right">0</td>
-<td align="right">0.6741201</td>
+<td align="right">0.6741202</td>
 <td align="right">0.4455910</td>
 <td align="right">0.3782927</td>
 <td align="right">8</td>
@@ -1045,11 +1088,9 @@ covariates are included in the model. As shown in the following example,
 one could simply specify <code>reml=1</code> to use REML, which is
 supported only for <code>model=&#39;NBLMM&#39;</code> in the current
 version.</p>
-<div id="example-3" class="section level3">
+<div id="example-4" class="section level3">
 <h3>Example</h3>
-<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;NBLMM&#39;,reml=1)
-#&gt; Remove  0  genes having low expression.
-#&gt; Analyzing  10  genes with  30  subjects and  6176  cells.</code></pre>
+<pre class="r"><code>re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model=&#39;NBLMM&#39;,reml=1,ncore=1)</code></pre>
 </div>
 </div>
 <div id="testing-contrasts" class="section level2">
@@ -1067,7 +1108,7 @@ the elements in the lower triangular part including the diagonal. Here
 is an example to recover the covariance matrix from the output of
 <code>nebula</code>.</p>
 <pre class="r"><code>df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;,covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;,covariance=TRUE,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
 cov= matrix(NA,4,4)
@@ -1092,7 +1133,7 @@ using the following code.</p>
 ## the gene to test
 gene_i = 1
 ## output covariance
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;,covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method=&#39;LN&#39;,covariance=TRUE,ncore=1)
 #&gt; Remove  0  genes having low expression.
 #&gt; Analyzing  10  genes with  30  subjects and  6176  cells.
 ## recover the covariance matrix
@@ -1176,6 +1217,10 @@ Manolis Kellis, and Alexander M. Kulminski. 2021. <span>“NEBULA Is a
 Fast Negative Binomial Mixed Model for Differential or Co-Expression
 Analysis of Large-Scale Multi-Subject Single-Cell Data.”</span>
 <em>Communications Biology</em>, no. 629 (May). <a href="https://doi.org/10.1038/s42003-021-02146-6">https://doi.org/10.1038/s42003-021-02146-6</a>.
+</div>
+<div id="ref-seurat_object" class="csl-entry">
+Lab, Satija. 2019. <em>Panc8.SeuratData: Eight Pancreas Datasets Across
+Five Technologies</em>.
 </div>
 </div>
 </div>

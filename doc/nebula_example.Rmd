@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.4.2
+# NEBULA v1.5.0
 
 ## Overview
 
@@ -52,6 +52,7 @@ The current version provides the following functions.
   *  `nebula`: performs an association analysis using NBMMs given a count matrix and subject IDs.
   *  `group_cell`: reorders cells to group them by the subject IDs.
   *  `nbresidual`: extracts Pearson residuals from the fitted model.
+  *  `scToNeb`: retrieves data from ```Seurat``` or ```SingleCellExperiment``` for calling `nebula`.
   
 ## Basic usage
 
@@ -85,7 +86,7 @@ head(df)
 ```
 The association analysis between the gene expression and the predictors can then be conducted using the ```nebula``` function as follows. The count matrix is an *M* by *N* matrix, where *M* is the number of genes, and *N* is the number of cells. The function by default fits the negative binomial gamma mixed model (NBGMM) for each of the genes, and returns a list of summary statistics including the fold change, p-values, and both subject-level and cell-level overdispersions ($\sigma^2$ and $\phi^{-1}$). The p-values returned by ```nebula``` are raw p-values (not adjusted for multiple testing). Users can take advantage of a multicore CPU by specifying the number of cores to use via the ```ncore``` argument. 
 ```{r,echo=TRUE}
-re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
+re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 re
 ```
 The cells in the count matrix need to be grouped by the subjects (that is, the cells of the same subject should be placed consecutively) before using as the input to the function ```nebula```. If the cells are not grouped, the function ```group_cell``` can be used to first reorder the cells, as shown below. If a scaling factor is specified by the user, it should also be included in ```group_cell```. If the cells are already grouped, ```group_cell``` will return *NULL*.
@@ -108,14 +109,33 @@ library(Matrix)
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 ```
 
+## Using Seurat/SingleCellExperiment Objects
+
+If a single cell data processing package such as ```Seurat``` or ```SingleCellExperiment``` was used, nebula can be easily implemented using the assistance of the helper function ```scToNeb```. Assuming that the metadata relevant to subject IDs and predictors are available in the object, ```scToNeb``` can retrieve and organize these objects and output a list that is similar to the example data provided in this vignette. For a ```SingleCellExperiment``` object, `assay` is not required. For a ```Seurat``` object, `assay` can also be specified to fit data from other assays. The ```nebula``` package contains a sample Seurat object obtained from [@seurat_object] (https://github.com/satijalab/seurat-data) comprised of pancreatic cells across eight samples.
+
+### Example
+
+```{r,echo=TRUE,eval=FALSE}
+library(nebula)
+data("sample_seurat")
+seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
+## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
+df = model.matrix(~celltype+tech, data=seuratdata$pred)
+## include only the first two cell types in the model to avoid separation due to too many binary variables
+data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c("(Intercept)","celltypeactivated_stellate","techcelseq2","techfluidigmc1","techindrop", "techsmartseq2")],offset=seuratdata$offset)
+re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)
+```
+
+The output will be a list with the first element containing ```counts```, the second containing a ```data.frame``` with all listed predictors, the third containing a character vector with all subject IDs, and the fourth containing the normalizing factor. Users can also use other scaling factors that may be stored within the object's metadata as a string in the ```offset``` argument. If subject ids are un-ordered, ```group_cell``` can be used.  
+
 ## Difference between NEBULA-LN and NEBULA-HL
 
 In *nebula*, a user can choose one of the two algorithms to fit an NBGMM. NEBULA-LN uses an approximated likelihood based on the law of large numbers, and NEBULA-HL uses an h-likelihood. A user can select these methods through ```method='LN'``` or ```method='HL'```. NEBULA-LN is faster and performs particularly well when the number of cells per subject (CPS) is large. In addition, NEBULA-LN is much more accurate in estimating a very large subject-level overdispersion. In contrast, NEBULA-HL is slower but more accurate in estimating the cell-level overdispersion.    
 
 In the following analysis of the example data set comprising ~200 cells per subject, the difference of the estimated cell-level overdispersions between NEBULA-LN and NEBULA-HL is ~5% for most genes.
 ```{r,eval=TRUE,echo=TRUE}
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
-re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL')
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
+re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 ```
@@ -153,7 +173,7 @@ In addition to the NBGMM, the *nebula* package provides efficient estimation imp
 
 ### Example
 ```{r,eval=TRUE,echo=TRUE}
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM')
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM',ncore=1)
 ```
 ```{r,echo=FALSE,results='asis'}
 knitr::kable(re$summary)
@@ -166,8 +186,8 @@ When testing subject-level variables, it should be kept in mind that the actual 
 In addition, when the ratio between the number of subjects and the number of subject-level variables is small (<10), it is recommended to instead use a restricted maximum likelihood (REML) estimate, which is provided in ```nebula``` through the argument ```reml```. Please see [@He_2021] for more details about the formula of REML. This is because the number of subject-level fixed-effects parameters should be much smaller than the number of subjects in order to make the maximum likelihood estimation (MLE) work properly. For example, if the data set has 50 subjects, it is a good practice to keep the number of subject-level variables below 5 based on our simulation study. Increasing the number of subject-level parameters will gradually inflate the type I error rate due to an underestimated overdispersion. When these two numbers are at the same magnitude, the MLE for the overdispersion will break down and consequently, the NBMM can degenerate to a negative binomial model. In contrast, REML takes into account the uncertainty of the estimated fixed effects and controls the false positive rate even if many subject-level covariates are included in the model. As shown in the following example, one could simply specify ```reml=1``` to use REML, which is supported only for ```model='NBLMM'``` in the current version.  
 
 ### Example
-```{r,eval=TRUE,echo=TRUE}
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1)
+```{r,eval=FALSE,echo=TRUE}
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1,ncore=1)
 ```
 
 ## Testing contrasts
@@ -177,7 +197,7 @@ In some situations, a user may want to test a combination (contrast) of the log(
 The first step is to tell ```nebula``` to output the covariance matrix of the estimated log(FC). This can be done by specifying ```covariance=TRUE``` in ```nebula```. To save storage, the covariance returned by ```nebula``` only contains the elements in the lower triangular part including the diagonal. Here is an example to recover the covariance matrix from the output of ```nebula```.
 ```{r,eval=TRUE,echo=TRUE}
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
 cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
@@ -193,7 +213,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 ## the gene to test
 gene_i = 1
 ## output covariance
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])

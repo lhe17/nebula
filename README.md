@@ -1,4 +1,4 @@
--   <a href="#nebula-v1.4.2" id="toc-nebula-v1.4.2">NEBULA v1.4.2</a>
+-   <a href="#nebula-v1.5.0" id="toc-nebula-v1.5.0">NEBULA v1.5.0</a>
     -   <a href="#overview" id="toc-overview">Overview</a>
     -   <a href="#installation" id="toc-installation">Installation</a>
         -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
@@ -9,6 +9,10 @@
     -   <a href="#specifying-scaling-factors"
         id="toc-specifying-scaling-factors">Specifying scaling factors</a>
         -   <a href="#example-1" id="toc-example-1">Example</a>
+    -   <a href="#using-seuratsinglecellexperiment-objects"
+        id="toc-using-seuratsinglecellexperiment-objects">Using
+        Seurat/SingleCellExperiment Objects</a>
+        -   <a href="#example-2" id="toc-example-2">Example</a>
     -   <a href="#difference-between-nebula-ln-and-nebula-hl"
         id="toc-difference-between-nebula-ln-and-nebula-hl">Difference between
         NEBULA-LN and NEBULA-HL</a>
@@ -21,11 +25,11 @@
         convergence for the summary statistics and quality control</a>
     -   <a href="#using-other-mixed-models"
         id="toc-using-other-mixed-models">Using other mixed models</a>
-        -   <a href="#example-2" id="toc-example-2">Example</a>
+        -   <a href="#example-3" id="toc-example-3">Example</a>
     -   <a href="#special-attention-paid-to-testing-subject-level-variables"
         id="toc-special-attention-paid-to-testing-subject-level-variables">Special
         attention paid to testing subject-level variables</a>
-        -   <a href="#example-3" id="toc-example-3">Example</a>
+        -   <a href="#example-4" id="toc-example-4">Example</a>
     -   <a href="#testing-contrasts" id="toc-testing-contrasts">Testing
         contrasts</a>
     -   <a href="#extracting-marginal-and-conditional-pearson-residuals"
@@ -35,7 +39,7 @@
         computing</a>
     -   <a href="#references" id="toc-references">References</a>
 
-# NEBULA v1.4.2
+# NEBULA v1.5.0
 
 ## Overview
 
@@ -83,6 +87,8 @@ The current version provides the following functions.
     matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
 -   `nbresidual`: extracts Pearson residuals from the fitted model.
+-   `scToNeb`: retrieves data from `Seurat` or `SingleCellExperiment`
+    for calling `nebula`.
 
 ## Basic usage
 
@@ -172,9 +178,12 @@ multicore CPU by specifying the number of cores to use via the `ncore`
 argument.
 
 ``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=2)
+re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
+#> Loading required package: foreach
+#> Loading required package: future
+#> Loading required package: rngtools
 re
 #> $summary
 #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
@@ -279,6 +288,41 @@ library(Matrix)
 re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 ```
 
+## Using Seurat/SingleCellExperiment Objects
+
+If a single cell data processing package such as `Seurat` or
+`SingleCellExperiment` was used, nebula can be easily implemented using
+the assistance of the helper function `scToNeb`. Assuming that the
+metadata relevant to subject IDs and predictors are available in the
+object, `scToNeb` can retrieve and organize these objects and output a
+list that is similar to the example data provided in this vignette. For
+a `SingleCellExperiment` object, `assay` is not required. For a `Seurat`
+object, `assay` can also be specified to fit data from other assays. The
+`nebula` package contains a sample Seurat object obtained from (Lab
+2019) (<https://github.com/satijalab/seurat-data>) comprised of
+pancreatic cells across eight samples.
+
+### Example
+
+``` r
+library(nebula)
+data("sample_seurat")
+seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
+## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
+df = model.matrix(~celltype+tech, data=seuratdata$pred)
+## include only the first two cell types in the model to avoid separation due to too many binary variables
+data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c("(Intercept)","celltypeactivated_stellate","techcelseq2","techfluidigmc1","techindrop", "techsmartseq2")],offset=seuratdata$offset)
+re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)
+```
+
+The output will be a list with the first element containing `counts`,
+the second containing a `data.frame` with all listed predictors, the
+third containing a character vector with all subject IDs, and the fourth
+containing the normalizing factor. Users can also use other scaling
+factors that may be stored within the object’s metadata as a string in
+the `offset` argument. If subject ids are un-ordered, `group_cell` can
+be used.
+
 ## Difference between NEBULA-LN and NEBULA-HL
 
 In *nebula*, a user can choose one of the two algorithms to fit an
@@ -296,10 +340,10 @@ per subject, the difference of the estimated cell-level overdispersions
 between NEBULA-LN and NEBULA-HL is \~5% for most genes.
 
 ``` r
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN')
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL')
+re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
 ## compare the estimated overdispersions
@@ -447,7 +491,7 @@ data set.
 ### Example
 
 ``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM')
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
 ```
@@ -501,9 +545,7 @@ for `model='NBLMM'` in the current version.
 ### Example
 
 ``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
+re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1,ncore=1)
 ```
 
 ## Testing contrasts
@@ -523,7 +565,7 @@ output of `nebula`.
 
 ``` r
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
 cov= matrix(NA,4,4)
@@ -551,7 +593,7 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 ## the gene to test
 gene_i = 1
 ## output covariance
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE)
+re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
 ## recover the covariance matrix
@@ -643,3 +685,6 @@ Manolis Kellis, and Alexander M. Kulminski. 2021. “NEBULA Is a Fast
 Negative Binomial Mixed Model for Differential or Co-Expression Analysis
 of Large-Scale Multi-Subject Single-Cell Data.” *Communications
 Biology*, no. 629 (May). <https://doi.org/10.1038/s42003-021-02146-6>.
+
+Lab, Satija. 2019. *Panc8.SeuratData: Eight Pancreas Datasets Across
+Five Technologies*.

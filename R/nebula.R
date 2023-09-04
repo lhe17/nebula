@@ -182,7 +182,10 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       if((posv$mct*mfs)<3)
       {ord = 3}else{ord = 1}
       
-      para = c(log(posv$mct) - moffset, rep(0, nb - 1))
+      # para = c(log(posv$mct) - moffset, rep(0, nb - 1))
+      lmct = log(posv$mct)
+      para = rep(0, nb)
+      para[intcol] = lmct - moffset
       re_t = tryCatch({
         ref = switch(opt,
                      'lbfgs'=lbfgs(c(para,1,cell_init), ptmg_ll_der, posindy = posv$posindy, X = pred, offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
@@ -206,8 +209,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       # betae = re_t$par[1:nb]
       conv = re_t[length(re_t)]
       fit = 1
-      lmct = log(posv$mct)
-      betae = c(lmct - moffset, rep(0, nb - 1))
+      betae = rep(0, nb)
+      betae[intcol] = lmct - moffset
       vare = re_t[(nb + 1):(nb + 2)]
       para = vare
       
@@ -305,7 +308,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         repml = opt_pml_nbm(pred, offset, posv$Y, fid-1, cumsumy[i, ], posind[[i]]-1,posv$posindy, nb, nind, k, betae,vare, reml, 1e-06,1)
       }
       
-      conv = check_conv(repml, conv)
+      conv = check_conv(repml, conv, nb)
       fccov = matrix(NA,nb,nb)
       if(conv != -25)
       {
@@ -335,7 +338,9 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
       
       re <- foreach(i = gid, .combine = 'cbind') %dorng% {
         posv = call_posindy(count, i - 1, nind)
-        para = c(log(posv$mct) - moffset, rep(0, nb - 1),1)
+        
+        para = c(rep(0,nb),1)
+        para[intcol] = log(posv$mct) - moffset
         re_t = tryCatch({
           nlminb(para, pmg_ll, pmg_der,posindy = posv$posindy, X = pred, offset = offset,
                  Y = posv$Y, fid = fid, cumsumy = cumsumy[i,], posind = posind[[i]], nb = nb, k = k,nind = nind, lower = lower, upper = upper)
@@ -358,8 +363,18 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         }
         var_re = rep(NA, npar)
         nnaind = (!is.nan(diag(hes))) & (re_t$par != lower) & (re_t$par != upper)
-        # if(min(eigen(-hes[nnaind, nnaind])$values)>1e-8)
-        if(RSpectra::eigs_sym(-hes[nnaind, nnaind],1,which='SA')$values[1] > 1e-8)
+        issingular = 0
+        lnnaind = length(nnaind)
+        if(lnnaind>2)
+        {
+          if(RSpectra::eigs_sym(-hes[nnaind, nnaind],1,which='SA')$values[1] < 1e-8)
+          {issingular = 1}
+        }else{
+          if((lnnaind == 2) & (min(eigen(-hes[nnaind, nnaind])$values)<1e-8))
+          {issingular = 1}
+        }
+        
+        if(issingular == 0)
         {
           covfix = solve(-hes[nnaind, nnaind])
           var_re[nnaind] = diag(covfix)

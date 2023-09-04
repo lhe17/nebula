@@ -58,26 +58,21 @@ nbresidual = function(nebula, count, id, pred = NULL, offset = NULL, conditional
   }
   
   # nbres = matrix(NA,ngene,ncell)
-  subod = as.matrix(nebula$overdispersion)[,1]
   
-  residuals = sapply(1:ngene, function(x) {
-    sigma2ind = subod[x]
-    if(nebula$algorithm[x]!='PGMM')
-    {sigma2cell = nebula$overdispersion[x,2]}else{
-      sigma2cell = 0
-    }
-    if(conditional==FALSE)
-    {
-      ey = exp(pred%*%t(nebula$summary[x,1:nb]) + logoff + sigma2ind/2)
-      vary = ey + ey*ey*(exp(sigma2ind)*(1+sigma2cell)-1)
-    }else{
-      ey = exp(pred%*%t(nebula$summary[x,1:nb]) + logoff + as.numeric(nebula$random_effect[x,id]))
-      vary = ey + ey*ey*sigma2cell
-    }
-    (count[nebula$summary[x,'gene_id'],] - ey)/sqrt(vary)
+  sigma2ind = as.matrix(nebula$overdispersion)[,1]
+  sigma2cell = nebula$overdispersion[,2]
+  sigma2cell[which(nebula$algorithm=='PGMM')] = 0
+  
+  if(conditional==FALSE)
+  {
+    ey = exp(pred%*%t(nebula$summary[,1:nb]) + logoff + rep(sigma2ind/2,each=ncell))
+    vary = ey + t(t(ey*ey)*(exp(sigma2ind)*(1+sigma2cell)-1))
+  }else{
+    ey = exp(pred%*%t(nebula$summary[,1:nb]) + logoff + as.numeric(t(nebula$random_effect[,id])))
+    vary = ey + t(t(ey*ey)*sigma2cell)
   }
-  )
-  
+  residuals = as.matrix(t(count[nebula$summary[,'gene_id'],]) - ey)/sqrt(vary)
+
   residuals = t(residuals)
   rownames(residuals) = nebula$summary[,'gene_id']
   colnames(residuals) = colnames(count)
