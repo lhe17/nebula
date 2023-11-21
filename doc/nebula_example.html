@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2023-09-04" />
+<meta name="date" content="2023-11-21" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -375,13 +375,13 @@ display: none;
 <h1 class="title toc-ignore">A fast negative binomial mixed model for
 analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2023-09-04</h4>
+<h4 class="date">2023-11-21</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#nebula-v1.5.0" id="toc-nebula-v1.5.0">NEBULA v1.5.0</a>
+<li><a href="#nebula-v1.5.1" id="toc-nebula-v1.5.1">NEBULA v1.5.1</a>
 <ul>
 <li><a href="#overview" id="toc-overview">Overview</a></li>
 <li><a href="#installation" id="toc-installation">Installation</a>
@@ -429,8 +429,8 @@ computing</a></li>
 </ul>
 </div>
 
-<div id="nebula-v1.5.0" class="section level1">
-<h1>NEBULA v1.5.0</h1>
+<div id="nebula-v1.5.1" class="section level1">
+<h1>NEBULA v1.5.1</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>The <em>nebula</em> package is an R package that provides fast
@@ -812,6 +812,8 @@ returns NaN.<br />
 reached and no improvement of the function value can be found.</li>
 <li>(!) -50: Only used for the PMM, indicating a failure of
 convergence.</li>
+<li>(!) -60: At least one of the estimated overdispersions reaches its
+upper bound.</li>
 </ul></li>
 </ul>
 <p>Depending on the concrete application, the estimated gene-specific
@@ -1206,7 +1208,10 @@ configuration.</p>
 <p>While parallel computing significantly improves computational time,
 users should monitor memory usage when exploiting multiple cores.
 Insufficient memory allocation to a new thread may cause the R session
-or job to be terminated by the operating system.</p>
+or job to be terminated by the operating system. In addition, if the
+number of cells is small, using too many cores might not improve or even
+reduce the efficiency because the overhead for creating new threads
+exceeds the speed gain.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="unnumbered">References</h2>

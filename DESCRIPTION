@@ -1,8 +1,8 @@
 Package: nebula
 Type: Package
 Title: Negative Binomial Mixed Models Using Large-Sample Approximation for Differential Expression Analysis of ScRNA-Seq Data
-Version: 1.5.0
-Date: 2023-09-02
+Version: 1.5.1
+Date: 2023-11-19
 Authors@R: c(
     person("Liang", "He", email = "hyx520101@gmail.com", role = c("aut", "cre")),
     person("Raghav", "Sharma", email = "raghavv.sharma@mail.utoronto.ca", role = "ctb"))
@@ -11,7 +11,7 @@ Description: A fast negative binomial mixed model for conducting association ana
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.7), nloptr, stats, Matrix, methods, RSpectra, Rfast, trust, doFuture (>= 0.12.2), future (>= 1.32.0), foreach (>= 1.5.2), doRNG (>= 1.8.6), Seurat, SingleCellExperiment
+Imports: Rcpp (>= 1.0.7), nloptr, stats, Matrix, methods, Rfast, trust, parallelly (>= 1.34.0), doFuture (>= 0.12.2), future (>= 1.32.0), foreach (>= 1.5.2), doRNG (>= 1.8.6), Seurat, SingleCellExperiment
 LinkingTo: Rcpp, RcppEigen
 Depends: R (>= 4.1)
 RoxygenNote: 7.2.3

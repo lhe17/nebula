@@ -1,4 +1,4 @@
--   <a href="#nebula-v1.5.0" id="toc-nebula-v1.5.0">NEBULA v1.5.0</a>
+-   <a href="#nebula-v1.5.1" id="toc-nebula-v1.5.1">NEBULA v1.5.1</a>
     -   <a href="#overview" id="toc-overview">Overview</a>
     -   <a href="#installation" id="toc-installation">Installation</a>
         -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
@@ -39,7 +39,7 @@
         computing</a>
     -   <a href="#references" id="toc-references">References</a>
 
-# NEBULA v1.5.0
+# NEBULA v1.5.1
 
 ## Overview
 
@@ -452,6 +452,8 @@ more details) may solve the problem.
         reached and no improvement of the function value can be found.
     -   (!) -50: Only used for the PMM, indicating a failure of
         convergence.
+    -   (!) -60: At least one of the estimated overdispersions reaches
+        its upper bound.
 
 Depending on the concrete application, the estimated gene-specific
 overdispersions can also be taken into consideration in quality control.
@@ -676,7 +678,10 @@ configuration.
 While parallel computing significantly improves computational time,
 users should monitor memory usage when exploiting multiple cores.
 Insufficient memory allocation to a new thread may cause the R session
-or job to be terminated by the operating system.
+or job to be terminated by the operating system. In addition, if the
+number of cells is small, using too many cores might not improve or even
+reduce the efficiency because the overhead for creating new threads
+exceeds the speed gain.
 
 ## References
 

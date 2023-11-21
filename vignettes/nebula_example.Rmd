@@ -4,11 +4,11 @@ author: "Liang He"
 date: "`r Sys.Date()`"
 bibliography: "references.bib"
 output:
+  html_document:
+    toc: yes
   md_document:
     toc: yes
     variant: markdown_github
-  html_document:
-    toc: yes
 vignette: >
   %\VignetteIndexEntry{A fast negative binomial mixed model for analyzing multi-subject single-cell data}
   %\VignetteEncoding{UTF-8}
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.5.0
+# NEBULA v1.5.1
 
 ## Overview
 
@@ -164,6 +164,7 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
   + (!) -30: The convergence fails because the likelihood function returns NaN.  
   + (!) -40: The convergence fails because the critical point is not reached and no improvement of the function value can be found.
   + (!) -50: Only used for the PMM, indicating a failure of convergence.
+  + (!) -60: At least one of the estimated overdispersions reaches its upper bound.
 
 Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noises. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but more common in e.g., SMART-seq2 as PCR duplicates introduce substantial noises. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in [@He_2021], genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well.
 
@@ -251,7 +252,7 @@ pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=s
 
 Starting with version 1.4.0, *nebula* supports parallel computing to accelerate tasks. To specify the number of logical cores (threads), users can use the ```ncore``` argument when running ```nebula```. By default, ```nebula``` uses two cores if more than two cores are available. However, if the specified value for ```ncore``` exceeds the number of available cores, *nebula* will use available cores detected and issue a warning. It's important to note that the maximum number of available processors on a computing cluster may be restricted by the job scheduler's configuration.
 
-While parallel computing significantly improves computational time, users should monitor memory usage when exploiting multiple cores. Insufficient memory allocation to a new thread may cause the R session or job to be terminated by the operating system. 
+While parallel computing significantly improves computational time, users should monitor memory usage when exploiting multiple cores. Insufficient memory allocation to a new thread may cause the R session or job to be terminated by the operating system. In addition, if the number of cells is small, using too many cores might not improve or even reduce the efficiency because the overhead for creating new threads exceeds the speed gain. 
 
 
 ## References

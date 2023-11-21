@@ -41,7 +41,8 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
 {
   reml <- check_reml(reml,model)
   
-  maxcore <- max(c(1, availableCores() - 1))
+  maxcore <- max(c(1, length(parallelly::availableWorkers()) - 1))
+  
   if(ncore>maxcore)
   {
     if (verbose == TRUE) {
@@ -166,16 +167,17 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
   
   cell_init = 1
   
+  registerDoFuture()
+  if(ncore==1)
+  {
+    plan(sequential)
+  }else{
+    cls <- parallelly::makeClusterPSOCK(ncore, autoStop = TRUE)
+    plan(cluster, workers = cls)
+  }
+  
   if (model %in% c('NBGMM','NBLMM')) {
-    
-    registerDoFuture()
-    if(ncore==1)
-    {
-      plan(sequential)
-    }else{
-      plan(multisession, workers = ncore)
-    }
-    
+
     re <- foreach(i = gid, .combine = 'cbind') %dorng% {
       posv = call_posindy(count, i - 1, nind)
       
@@ -308,7 +310,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         repml = opt_pml_nbm(pred, offset, posv$Y, fid-1, cumsumy[i, ], posind[[i]]-1,posv$posindy, nb, nind, k, betae,vare, reml, 1e-06,1)
       }
       
-      conv = check_conv(repml, conv, nb)
+      conv = check_conv(repml, conv, nb, vare, min, max)
       fccov = matrix(NA,nb,nb)
       if(conv != -25)
       {
@@ -328,14 +330,7 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     
     }
   }else {
-      registerDoFuture()
-      if(ncore==1)
-      {
-        plan(sequential)
-      }else{
-        plan(multisession, workers = ncore)
-      }
-      
+
       re <- foreach(i = gid, .combine = 'cbind') %dorng% {
         posv = call_posindy(count, i - 1, nind)
         
@@ -365,12 +360,9 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         nnaind = (!is.nan(diag(hes))) & (re_t$par != lower) & (re_t$par != upper)
         issingular = 0
         lnnaind = length(nnaind)
-        if(lnnaind>2)
+        if(lnnaind>1)
         {
-          if(RSpectra::eigs_sym(-hes[nnaind, nnaind],1,which='SA')$values[1] < 1e-8)
-          {issingular = 1}
-        }else{
-          if((lnnaind == 2) & (min(eigen(-hes[nnaind, nnaind])$values)<1e-8))
+          if(min(eigen(-hes[nnaind, nnaind])$values)<1e-8)
           {issingular = 1}
         }
         
@@ -393,7 +385,12 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         }
         restemp
       }
-    
+  }
+  
+  if(ncore>1)
+  {
+    rm(list = "cls")
+    gc()
   }
   
   colnames(re) <- NULL
