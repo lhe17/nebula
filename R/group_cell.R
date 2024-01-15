@@ -40,7 +40,7 @@ group_cell = function(count, id, pred = NULL, offset = NULL)
     {
       if(nc!=nrow(as.matrix(pred)))
       {stop("The number of rows of the design matrix is not equal to the number of columns of the count matrix")}
-      pred = as.matrix(pred)[o,]
+      pred = as.matrix(pred)[o,,drop = FALSE]
     }
     if(is.null(offset)==FALSE)
     {

@@ -1,45 +1,4 @@
--   <a href="#nebula-v1.5.1" id="toc-nebula-v1.5.1">NEBULA v1.5.1</a>
-    -   <a href="#overview" id="toc-overview">Overview</a>
-    -   <a href="#installation" id="toc-installation">Installation</a>
-        -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
-            version</a>
-    -   <a href="#functions" id="toc-functions">Functions</a>
-    -   <a href="#basic-usage" id="toc-basic-usage">Basic usage</a>
-        -   <a href="#example" id="toc-example">Example</a>
-    -   <a href="#specifying-scaling-factors"
-        id="toc-specifying-scaling-factors">Specifying scaling factors</a>
-        -   <a href="#example-1" id="toc-example-1">Example</a>
-    -   <a href="#using-seuratsinglecellexperiment-objects"
-        id="toc-using-seuratsinglecellexperiment-objects">Using
-        Seurat/SingleCellExperiment Objects</a>
-        -   <a href="#example-2" id="toc-example-2">Example</a>
-    -   <a href="#difference-between-nebula-ln-and-nebula-hl"
-        id="toc-difference-between-nebula-ln-and-nebula-hl">Difference between
-        NEBULA-LN and NEBULA-HL</a>
-    -   <a href="#filtering-low-expression-genes"
-        id="toc-filtering-low-expression-genes">Filtering low-expression
-        genes</a>
-    -   <a
-        href="#checking-convergence-for-the-summary-statistics-and-quality-control"
-        id="toc-checking-convergence-for-the-summary-statistics-and-quality-control">Checking
-        convergence for the summary statistics and quality control</a>
-    -   <a href="#using-other-mixed-models"
-        id="toc-using-other-mixed-models">Using other mixed models</a>
-        -   <a href="#example-3" id="toc-example-3">Example</a>
-    -   <a href="#special-attention-paid-to-testing-subject-level-variables"
-        id="toc-special-attention-paid-to-testing-subject-level-variables">Special
-        attention paid to testing subject-level variables</a>
-        -   <a href="#example-4" id="toc-example-4">Example</a>
-    -   <a href="#testing-contrasts" id="toc-testing-contrasts">Testing
-        contrasts</a>
-    -   <a href="#extracting-marginal-and-conditional-pearson-residuals"
-        id="toc-extracting-marginal-and-conditional-pearson-residuals">Extracting
-        marginal and conditional Pearson residuals</a>
-    -   <a href="#parallel-computing" id="toc-parallel-computing">Parallel
-        computing</a>
-    -   <a href="#references" id="toc-references">References</a>
-
-# NEBULA v1.5.1
+# NEBULA v1.5.2
 
 ## Overview
 
@@ -63,11 +22,9 @@ More details can be found in (He et al. 2021)
 
 To install the latest version from github:
 
-``` r
-install.packages("devtools")
-library(devtools)
-install_github("lhe17/nebula")
-```
+    install.packages("devtools")
+    library(devtools)
+    install_github("lhe17/nebula")
 
 During installation, the *nebula* package may first install the *Rfast*
 package, which requires the presence of GSL in the environment. The
@@ -96,47 +53,39 @@ We use an example data set to illustrate how to use nebula to perform an
 association analysis of multi-subject single-cell data. The example data
 set attached to the R package can be loaded as follows.
 
-``` r
-library(nebula)
-data(sample_data)
-```
+    library(nebula)
+    data(sample_data)
 
 The example data set includes a count matrix of 6030 cells and 10 genes
 from 30 subjects.
 
-``` r
-dim(sample_data$count)
-#> [1]   10 6176
-```
+    dim(sample_data$count)
+    #> [1]   10 6176
 
 The count matrix can be a matrix object or a sparse dgCMatrix object
 (the same format as in `Seurat`). The elements should be integers.
 
-``` r
-sample_data$count[1:5,1:5]
-#> 5 x 5 sparse Matrix of class "dgCMatrix"
-#>            
-#> A . . . . .
-#> B . . . . .
-#> C . 1 2 . .
-#> D . . . . .
-#> E . . . . .
-```
+    sample_data$count[1:5,1:5]
+    #> 5 x 5 sparse Matrix of class "dgCMatrix"
+    #>            
+    #> A . . . . .
+    #> B . . . . .
+    #> C . 1 2 . .
+    #> D . . . . .
+    #> E . . . . .
 
 The subject IDs of each cell are stored in `sample_data$sid`. The
 subject IDs can be a character or numeric vector, the length of which
 should equal the number of cells.
 
-``` r
-head(sample_data$sid)
-#> [1] "1" "1" "1" "1" "1" "1"
-table(sample_data$sid)
-#> 
-#>   1  10  11  12  13  14  15  16  17  18  19   2  20  21  22  23  24  25  26  27 
-#> 187 230 185 197 163 216 211 195 200 239 196 223 198 202 213 210 199 214 237 200 
-#>  28  29   3  30   4   5   6   7   8   9 
-#> 205 183 222 191 205 225 211 197 215 207
-```
+    head(sample_data$sid)
+    #> [1] "1" "1" "1" "1" "1" "1"
+    table(sample_data$sid)
+    #> 
+    #>   1  10  11  12  13  14  15  16  17  18  19   2  20  21  22  23  24  25  26  27 
+    #> 187 230 185 197 163 216 211 195 200 239 196 223 198 202 213 210 199 214 237 200 
+    #>  28  29   3  30   4   5   6   7   8   9 
+    #> 205 183 222 191 205 225 211 197 215 207
 
 The next step is to build a design matrix for the predictors. The
 example data set includes a data frame consisting of three predictors
@@ -145,25 +94,23 @@ function `model.matrix`. The intercept term must be included in the
 design matrix. Each column in the design matrix should have a unique
 variable name.
 
-``` r
-head(sample_data$pred)
-#>           X1        X2      cc
-#> 1  0.6155094 0.9759191 control
-#> 2  1.4608092 0.9759191    case
-#> 3  1.6675054 0.9759191 control
-#> 4 -0.1717715 0.9759191    case
-#> 5  0.2277492 0.9759191 control
-#> 6 -0.2635516 0.9759191 control
-df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-head(df)
-#>   (Intercept)         X1        X2 cccontrol
-#> 1           1  0.6155094 0.9759191         1
-#> 2           1  1.4608092 0.9759191         0
-#> 3           1  1.6675054 0.9759191         1
-#> 4           1 -0.1717715 0.9759191         0
-#> 5           1  0.2277492 0.9759191         1
-#> 6           1 -0.2635516 0.9759191         1
-```
+    head(sample_data$pred)
+    #>           X1        X2      cc
+    #> 1  0.6155094 0.9759191 control
+    #> 2  1.4608092 0.9759191    case
+    #> 3  1.6675054 0.9759191 control
+    #> 4 -0.1717715 0.9759191    case
+    #> 5  0.2277492 0.9759191 control
+    #> 6 -0.2635516 0.9759191 control
+    df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+    head(df)
+    #>   (Intercept)         X1        X2 cccontrol
+    #> 1           1  0.6155094 0.9759191         1
+    #> 2           1  1.4608092 0.9759191         0
+    #> 3           1  1.6675054 0.9759191         1
+    #> 4           1 -0.1717715 0.9759191         0
+    #> 5           1  0.2277492 0.9759191         1
+    #> 6           1 -0.2635516 0.9759191         1
 
 The association analysis between the gene expression and the predictors
 can then be conducted using the `nebula` function as follows. The count
@@ -177,75 +124,73 @@ subject-level and cell-level overdispersions (*σ*<sup>2</sup> and
 multicore CPU by specifying the number of cores to use via the `ncore`
 argument.
 
-``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-#> Loading required package: foreach
-#> Loading required package: future
-#> Loading required package: rngtools
-re
-#> $summary
-#>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
-#> 1          -1.902455 -0.016755225 -0.097867225     0.047278197     0.06335820
-#> 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
-#> 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
-#> 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
-#> 5          -1.979437  0.011557090 -0.025198987     0.032890493     0.06155853
-#> 6          -1.949991  0.013483039 -0.012548791    -0.031590577     0.07440949
-#> 7          -1.969248 -0.003531361  0.075230699    -0.009075031     0.06185028
-#> 8          -1.964371  0.013639930 -0.061302756    -0.059284665     0.07786361
-#> 9          -2.072699 -0.017372176 -0.043828288     0.026624998     0.05737632
-#> 10         -2.045646  0.030742876  0.022260805    -0.025516032     0.06842796
-#>         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
-#> 1  0.03534659 0.06449424   0.06879634 4.362617e-198 0.6354810 0.1291514
-#> 2  0.03787429 0.06255849   0.07385888 2.052788e-240 0.9436079 0.3896819
-#> 3  0.03696089 0.09238230   0.07258521 6.275230e-121 0.6271261 0.9792875
-#> 4  0.03704556 0.05624824   0.07252600 5.822948e-291 0.8777381 0.6213846
-#> 5  0.03750948 0.06101307   0.07331551 7.432319e-227 0.7579977 0.6795995
-#> 6  0.03623477 0.07321208   0.07087566 2.257914e-151 0.7098168 0.8639067
-#> 7  0.03631619 0.06068697   0.07133730 1.872102e-222 0.9225364 0.2151043
-#> 8  0.03551903 0.07955877   0.06969748 1.957495e-140 0.7009654 0.4409831
-#> 9  0.03816039 0.05767972   0.07453316 9.307495e-286 0.6489358 0.4473406
-#> 10 0.03798694 0.06917485   0.07374591 2.292903e-196 0.4183419 0.7476005
-#>    p_cccontrol gene_id gene
-#> 1    0.4919443       1    A
-#> 2    0.7627706       2    B
-#> 3    0.5058082       3    C
-#> 4    0.2861434       4    D
-#> 5    0.6537089       5    E
-#> 6    0.6558008       6    F
-#> 7    0.8987718       7    G
-#> 8    0.3949916       8    H
-#> 9    0.7209245       9    I
-#> 10   0.7293432      10    J
-#> 
-#> $overdispersion
-#>       Subject      Cell
-#> 1  0.08125256 0.8840821
-#> 2  0.07102681 0.9255032
-#> 3  0.17159404 0.9266395
-#> 4  0.05026165 0.8124118
-#> 5  0.07075366 1.2674146
-#> 6  0.12086392 1.1096065
-#> 7  0.07360445 0.9112956
-#> 8  0.13571262 0.7549629
-#> 9  0.05541398 0.8139652
-#> 10 0.09496649 0.9410035
-#> 
-#> $convergence
-#>  [1] 1 1 1 1 1 1 1 1 1 1
-#> 
-#> $algorithm
-#>  [1] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
-#>  [6] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
-#> 
-#> $covariance
-#> NULL
-#> 
-#> $random_effect
-#> NULL
-```
+    re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
+    #> Loading required package: foreach
+    #> Loading required package: future
+    #> Loading required package: rngtools
+    re
+    #> $summary
+    #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
+    #> 1          -1.902455 -0.016755225 -0.097867225     0.047278197     0.06335820
+    #> 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
+    #> 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
+    #> 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
+    #> 5          -1.979437  0.011557090 -0.025198987     0.032890493     0.06155853
+    #> 6          -1.949991  0.013483039 -0.012548791    -0.031590577     0.07440949
+    #> 7          -1.969248 -0.003531361  0.075230699    -0.009075031     0.06185028
+    #> 8          -1.964371  0.013639930 -0.061302756    -0.059284665     0.07786361
+    #> 9          -2.072699 -0.017372176 -0.043828288     0.026624998     0.05737632
+    #> 10         -2.045646  0.030742876  0.022260805    -0.025516032     0.06842796
+    #>         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
+    #> 1  0.03534659 0.06449424   0.06879634 4.362617e-198 0.6354810 0.1291514
+    #> 2  0.03787429 0.06255849   0.07385888 2.052788e-240 0.9436079 0.3896819
+    #> 3  0.03696089 0.09238230   0.07258521 6.275230e-121 0.6271261 0.9792875
+    #> 4  0.03704556 0.05624824   0.07252600 5.822948e-291 0.8777381 0.6213846
+    #> 5  0.03750948 0.06101307   0.07331551 7.432319e-227 0.7579977 0.6795995
+    #> 6  0.03623477 0.07321208   0.07087566 2.257914e-151 0.7098168 0.8639067
+    #> 7  0.03631619 0.06068697   0.07133730 1.872102e-222 0.9225364 0.2151043
+    #> 8  0.03551903 0.07955877   0.06969748 1.957495e-140 0.7009654 0.4409831
+    #> 9  0.03816039 0.05767972   0.07453316 9.307495e-286 0.6489358 0.4473406
+    #> 10 0.03798694 0.06917485   0.07374591 2.292903e-196 0.4183419 0.7476005
+    #>    p_cccontrol gene_id gene
+    #> 1    0.4919443       1    A
+    #> 2    0.7627706       2    B
+    #> 3    0.5058082       3    C
+    #> 4    0.2861434       4    D
+    #> 5    0.6537089       5    E
+    #> 6    0.6558008       6    F
+    #> 7    0.8987718       7    G
+    #> 8    0.3949916       8    H
+    #> 9    0.7209245       9    I
+    #> 10   0.7293432      10    J
+    #> 
+    #> $overdispersion
+    #>       Subject      Cell
+    #> 1  0.08125256 0.8840821
+    #> 2  0.07102681 0.9255032
+    #> 3  0.17159404 0.9266395
+    #> 4  0.05026165 0.8124118
+    #> 5  0.07075366 1.2674146
+    #> 6  0.12086392 1.1096065
+    #> 7  0.07360445 0.9112956
+    #> 8  0.13571262 0.7549629
+    #> 9  0.05541398 0.8139652
+    #> 10 0.09496649 0.9410035
+    #> 
+    #> $convergence
+    #>  [1] 1 1 1 1 1 1 1 1 1 1
+    #> 
+    #> $algorithm
+    #>  [1] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
+    #>  [6] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
+    #> 
+    #> $covariance
+    #> NULL
+    #> 
+    #> $random_effect
+    #> NULL
 
 The cells in the count matrix need to be grouped by the subjects (that
 is, the cells of the same subject should be placed consecutively) before
@@ -257,10 +202,8 @@ grouped, `group_cell` will return *NULL*.
 
 ### Example
 
-``` r
-data_g = group_cell(count=sample_data$count,id=sample_data$sid,pred=df)
-re = nebula(data_g$count,data_g$id,pred=data_g$pred)
-```
+    data_g = group_cell(count=sample_data$count,id=sample_data$sid,pred=df)
+    re = nebula(data_g$count,data_g$id,pred=data_g$pred)
 
 If `pred` is not specified, `nebula` will fit the model with an
 intercept term by default. This can be used when only the
@@ -282,11 +225,9 @@ counts, it is not recommended to use a normalized count matrix for
 
 ### Example
 
-``` r
-library(Matrix)
-# An example of using the library size of each cell as the scaling factor
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
-```
+    library(Matrix)
+    # An example of using the library size of each cell as the scaling factor
+    re = nebula(sample_data$count,sample_data$sid,pred=df,offset=Matrix::colSums(sample_data$count))
 
 ## Using Seurat/SingleCellExperiment Objects
 
@@ -304,16 +245,14 @@ pancreatic cells across eight samples.
 
 ### Example
 
-``` r
-library(nebula)
-data("sample_seurat")
-seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
-## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
-df = model.matrix(~celltype+tech, data=seuratdata$pred)
-## include only the first two cell types in the model to avoid separation due to too many binary variables
-data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c("(Intercept)","celltypeactivated_stellate","techcelseq2","techfluidigmc1","techindrop", "techsmartseq2")],offset=seuratdata$offset)
-re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)
-```
+    library(nebula)
+    data("sample_seurat")
+    seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
+    ## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
+    df = model.matrix(~celltype+tech, data=seuratdata$pred)
+    ## include only the first two cell types in the model to avoid separation due to too many binary variables
+    data_g = group_cell(count=seuratdata$count,id=seuratdata$id,pred=df[,c("(Intercept)","celltypeactivated_stellate","techcelseq2","techfluidigmc1","techindrop", "techsmartseq2")],offset=seuratdata$offset)
+    re = nebula(data_g$count,data_g$id,pred=data_g$pred,offset=data_g$offset)
 
 The output will be a list with the first element containing `counts`,
 the second containing a `data.frame` with all listed predictors, the
@@ -335,54 +274,50 @@ estimating a very large subject-level overdispersion. In contrast,
 NEBULA-HL is slower but more accurate in estimating the cell-level
 overdispersion.
 
-In the following analysis of the example data set comprising \~200 cells
+In the following analysis of the example data set comprising ~200 cells
 per subject, the difference of the estimated cell-level overdispersions
-between NEBULA-LN and NEBULA-HL is \~5% for most genes.
+between NEBULA-LN and NEBULA-HL is ~5% for most genes.
 
-``` r
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-## compare the estimated overdispersions
-cbind(re_hl$overdispersion,re_ln$overdispersion)
-#>       Subject      Cell    Subject      Cell
-#> 1  0.08432321 0.9284703 0.08125256 0.8840821
-#> 2  0.07455464 0.9726512 0.07102681 0.9255032
-#> 3  0.17403276 0.9817570 0.17159404 0.9266395
-#> 4  0.05352148 0.8516682 0.05026165 0.8124118
-#> 5  0.07480033 1.3254379 0.07075366 1.2674146
-#> 6  0.12372426 1.1653128 0.12086392 1.1096065
-#> 7  0.07724824 0.9578169 0.07360445 0.9112956
-#> 8  0.13797646 0.7991954 0.13571262 0.7549629
-#> 9  0.05879492 0.8568854 0.05541398 0.8139652
-#> 10 0.09782335 0.9940223 0.09496649 0.9410035
-```
+    re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
+    re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
+    ## compare the estimated overdispersions
+    cbind(re_hl$overdispersion,re_ln$overdispersion)
+    #>       Subject      Cell    Subject      Cell
+    #> 1  0.08432318 0.9284699 0.08125256 0.8840821
+    #> 2  0.07455464 0.9726513 0.07102681 0.9255032
+    #> 3  0.17403263 0.9817569 0.17159404 0.9266395
+    #> 4  0.05352153 0.8516679 0.05026165 0.8124118
+    #> 5  0.07480033 1.3254379 0.07075366 1.2674146
+    #> 6  0.12372424 1.1653129 0.12086392 1.1096065
+    #> 7  0.07724825 0.9578169 0.07360445 0.9112956
+    #> 8  0.13797645 0.7991948 0.13571262 0.7549629
+    #> 9  0.05879495 0.8568850 0.05541398 0.8139652
+    #> 10 0.09782333 0.9940222 0.09496649 0.9410035
 
 Such difference has little impact on testing fixed-effects predictors
 under this sample size.
 
-``` r
-## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
-cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
-#>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
-#> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787882   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278826   0.2868256 0.8777381 0.6213846   0.2861434
-#> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
-#> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017083 0.4443604   0.3955343 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
-```
+    ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
+    cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
+    #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
+    #> 1  0.6373036 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+    #> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
+    #> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
+    #> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
+    #> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
+    #> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
+    #> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
+    #> 8  0.7017082 0.4443604   0.3955342 0.7009654 0.4409831   0.3949916
+    #> 9  0.6505414 0.4561470   0.7238323 0.6489358 0.4473406   0.7209245
+    #> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
 larger when the CPS value becomes lower or the gene expression is more
-sparse. If the CPS value is \<30, `nebula` will set `method='HL'`
+sparse. If the CPS value is &lt;30, `nebula` will set `method='HL'`
 regardless of the user’s input.
 
 When NEBULA-LN is used, the user can opt for better accuracy of
@@ -391,7 +326,7 @@ estimating a smaller subject-level overdispersion through the argument
 for a gene is smaller than the user-defined value, NEBULA-HL will be
 used to estimate the subject-level overdispersion for the gene. The
 default value of *κ* is 800, which can provide a good estimate of the
-subject-level overdispersion as low as \~0.005. Our simulation results
+subject-level overdispersion as low as ~0.005. Our simulation results
 suggest that *κ* = 200 is often sufficient for achieving a well
 controlled false positive rate of testing a cell-level predictor. We do
 not recommend using a smaller *κ* than 200. Specifying a larger *κ* can
@@ -404,7 +339,7 @@ sensitive to the accuracy of the estimated subject-level overdispersion.
 So we recommend using *κ* = 800 (as default) or even larger when testing
 a subject-level predictor. Another option to testing a subject-level
 predictor is to use a Poisson gamma mixed model, which is extremely fast
-(\>50x faster than NEBULA-LN) and will be described below.
+(&gt;50x faster than NEBULA-LN) and will be described below.
 
 ## Filtering low-expression genes
 
@@ -416,7 +351,7 @@ low-expressed genes and controls the false positive rate. Nevertheless,
 we recommend removing genes with very low expression from the analysis
 because there is little statistical power for these genes. Filtering out
 low-expressed genes can be specified by `cpc=0.005` (i.e., counts per
-cell\<0.5%). The argument `cpc` is defined by the ratio between the
+cell&lt;0.5%). The argument `cpc` is defined by the ratio between the
 total count of the gene and the number of cells.
 
 ## Checking convergence for the summary statistics and quality control
@@ -466,12 +401,12 @@ SMART-seq2 as PCR duplicates introduce substantial noises. It might be
 hard to give a precise cut-off for a large overdispersion because it
 also depends on the sample size of the data. Based on the empirical
 simulation study in (He et al. 2021), genes with an estimated cell-level
-overdispersion \>100 should be removed for a data set with at least 50
+overdispersion &gt;100 should be removed for a data set with at least 50
 cells per subject. On the other hand, if the purpose is to extract
 residuals for downstream analysis such as clustering, genes with a large
 cell-level overdispersion might be preferable because they have large
 variations. If the variable of interest is subject-level, genes with a
-very large subject-level overdispersion (\>1) should be removed or
+very large subject-level overdispersion (&gt;1) should be removed or
 interpreted cautiously as well.
 
 ## Using other mixed models
@@ -492,41 +427,225 @@ data set.
 
 ### Example
 
-``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM',ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-```
+    re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='PMM',ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
 
-| logFC\_(Intercept) |   logFC_X1 |   logFC_X2 | logFC_cccontrol | se\_(Intercept) |     se_X1 |     se_X2 | se_cccontrol | p\_(Intercept) |      p_X1 |      p_X2 | p_cccontrol | gene_id | gene |
-|-------:|----:|----:|------:|------:|----:|----:|-----:|-----:|----:|----:|-----:|---:|:--|
-|          -1.903571 | -0.0155809 | -0.0976660 |       0.0511060 |       0.0661297 | 0.0329115 | 0.0655553 |    0.0642299 |              0 | 0.6359142 | 0.1362700 |   0.4262222 |       1 | A    |
-|          -2.047864 | -0.0032670 | -0.0536887 |      -0.0189269 |       0.0644332 | 0.0355074 | 0.0635450 |    0.0694853 |              0 | 0.9266904 | 0.3981703 |   0.7853239 |       2 | B    |
-|          -2.032645 |  0.0179777 |  0.0009387 |      -0.0505390 |       0.0908196 | 0.0345496 | 0.0932449 |    0.0676706 |              0 | 0.6028248 | 0.9919678 |   0.4551611 |       3 | C    |
-|          -2.009746 | -0.0054963 | -0.0278602 |       0.0782074 |       0.0573209 | 0.0350745 | 0.0574459 |    0.0686939 |              0 | 0.8754792 | 0.6276888 |   0.2549156 |       4 | D    |
-|          -1.980528 |  0.0106338 | -0.0248791 |       0.0312190 |       0.0644287 | 0.0343355 | 0.0621576 |    0.0671645 |              0 | 0.7567865 | 0.6889656 |   0.6420644 |       5 | E    |
-|          -1.950451 |  0.0160341 | -0.0134775 |      -0.0345244 |       0.0778198 | 0.0333858 | 0.0738508 |    0.0650410 |              0 | 0.6310363 | 0.8551928 |   0.5955505 |       6 | F    |
-|          -1.970271 | -0.0026753 |  0.0750060 |      -0.0063677 |       0.0645989 | 0.0341936 | 0.0615160 |    0.0668723 |              0 | 0.9376369 | 0.2227329 |   0.9241391 |       7 | G    |
-|          -1.964311 |  0.0141532 | -0.0610984 |      -0.0578672 |       0.0809943 | 0.0336579 | 0.0800990 |    0.0656800 |              0 | 0.6741201 | 0.4455910 |   0.3782927 |       8 | H    |
-|          -2.074031 | -0.0178190 | -0.0436094 |       0.0259745 |       0.0597947 | 0.0362203 | 0.0587679 |    0.0707912 |              0 | 0.6227459 | 0.4580494 |   0.7136813 |       9 | I    |
-|          -2.046055 |  0.0307026 |  0.0227238 |      -0.0246112 |       0.0714158 | 0.0354844 | 0.0702268 |    0.0691813 |              0 | 0.3869068 | 0.7462578 |   0.7220276 |      10 | J    |
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
+<col style="width: 8%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 7%" />
+<col style="width: 4%" />
+<col style="width: 3%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">logFC_(Intercept)</th>
+<th style="text-align: right;">logFC_X1</th>
+<th style="text-align: right;">logFC_X2</th>
+<th style="text-align: right;">logFC_cccontrol</th>
+<th style="text-align: right;">se_(Intercept)</th>
+<th style="text-align: right;">se_X1</th>
+<th style="text-align: right;">se_X2</th>
+<th style="text-align: right;">se_cccontrol</th>
+<th style="text-align: right;">p_(Intercept)</th>
+<th style="text-align: right;">p_X1</th>
+<th style="text-align: right;">p_X2</th>
+<th style="text-align: right;">p_cccontrol</th>
+<th style="text-align: right;">gene_id</th>
+<th style="text-align: left;">gene</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">-1.903571</td>
+<td style="text-align: right;">-0.0155809</td>
+<td style="text-align: right;">-0.0976660</td>
+<td style="text-align: right;">0.0511060</td>
+<td style="text-align: right;">0.0661297</td>
+<td style="text-align: right;">0.0329115</td>
+<td style="text-align: right;">0.0655553</td>
+<td style="text-align: right;">0.0642299</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6359142</td>
+<td style="text-align: right;">0.1362700</td>
+<td style="text-align: right;">0.4262222</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">A</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.047864</td>
+<td style="text-align: right;">-0.0032670</td>
+<td style="text-align: right;">-0.0536887</td>
+<td style="text-align: right;">-0.0189269</td>
+<td style="text-align: right;">0.0644332</td>
+<td style="text-align: right;">0.0355074</td>
+<td style="text-align: right;">0.0635450</td>
+<td style="text-align: right;">0.0694853</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.9266904</td>
+<td style="text-align: right;">0.3981703</td>
+<td style="text-align: right;">0.7853239</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-2.032645</td>
+<td style="text-align: right;">0.0179777</td>
+<td style="text-align: right;">0.0009387</td>
+<td style="text-align: right;">-0.0505390</td>
+<td style="text-align: right;">0.0908196</td>
+<td style="text-align: right;">0.0345496</td>
+<td style="text-align: right;">0.0932449</td>
+<td style="text-align: right;">0.0676706</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6028248</td>
+<td style="text-align: right;">0.9919678</td>
+<td style="text-align: right;">0.4551611</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">C</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.009746</td>
+<td style="text-align: right;">-0.0054963</td>
+<td style="text-align: right;">-0.0278602</td>
+<td style="text-align: right;">0.0782074</td>
+<td style="text-align: right;">0.0573209</td>
+<td style="text-align: right;">0.0350745</td>
+<td style="text-align: right;">0.0574459</td>
+<td style="text-align: right;">0.0686939</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.8754792</td>
+<td style="text-align: right;">0.6276889</td>
+<td style="text-align: right;">0.2549156</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">D</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.980528</td>
+<td style="text-align: right;">0.0106338</td>
+<td style="text-align: right;">-0.0248791</td>
+<td style="text-align: right;">0.0312190</td>
+<td style="text-align: right;">0.0644287</td>
+<td style="text-align: right;">0.0343355</td>
+<td style="text-align: right;">0.0621576</td>
+<td style="text-align: right;">0.0671645</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.7567865</td>
+<td style="text-align: right;">0.6889656</td>
+<td style="text-align: right;">0.6420644</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">E</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.950451</td>
+<td style="text-align: right;">0.0160341</td>
+<td style="text-align: right;">-0.0134775</td>
+<td style="text-align: right;">-0.0345244</td>
+<td style="text-align: right;">0.0778198</td>
+<td style="text-align: right;">0.0333858</td>
+<td style="text-align: right;">0.0738508</td>
+<td style="text-align: right;">0.0650410</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6310363</td>
+<td style="text-align: right;">0.8551928</td>
+<td style="text-align: right;">0.5955505</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">F</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-1.970271</td>
+<td style="text-align: right;">-0.0026753</td>
+<td style="text-align: right;">0.0750060</td>
+<td style="text-align: right;">-0.0063677</td>
+<td style="text-align: right;">0.0645989</td>
+<td style="text-align: right;">0.0341936</td>
+<td style="text-align: right;">0.0615160</td>
+<td style="text-align: right;">0.0668723</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.9376369</td>
+<td style="text-align: right;">0.2227329</td>
+<td style="text-align: right;">0.9241391</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">G</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-1.964311</td>
+<td style="text-align: right;">0.0141532</td>
+<td style="text-align: right;">-0.0610984</td>
+<td style="text-align: right;">-0.0578672</td>
+<td style="text-align: right;">0.0809943</td>
+<td style="text-align: right;">0.0336579</td>
+<td style="text-align: right;">0.0800990</td>
+<td style="text-align: right;">0.0656800</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6741202</td>
+<td style="text-align: right;">0.4455910</td>
+<td style="text-align: right;">0.3782927</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">H</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">-2.074031</td>
+<td style="text-align: right;">-0.0178190</td>
+<td style="text-align: right;">-0.0436094</td>
+<td style="text-align: right;">0.0259745</td>
+<td style="text-align: right;">0.0597947</td>
+<td style="text-align: right;">0.0362203</td>
+<td style="text-align: right;">0.0587679</td>
+<td style="text-align: right;">0.0707912</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.6227459</td>
+<td style="text-align: right;">0.4580494</td>
+<td style="text-align: right;">0.7136813</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">I</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">-2.046055</td>
+<td style="text-align: right;">0.0307026</td>
+<td style="text-align: right;">0.0227238</td>
+<td style="text-align: right;">-0.0246112</td>
+<td style="text-align: right;">0.0714158</td>
+<td style="text-align: right;">0.0354844</td>
+<td style="text-align: right;">0.0702268</td>
+<td style="text-align: right;">0.0691813</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.3869068</td>
+<td style="text-align: right;">0.7462578</td>
+<td style="text-align: right;">0.7220276</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">J</td>
+</tr>
+</tbody>
+</table>
 
 ## Special attention paid to testing subject-level variables
 
 When testing subject-level variables, it should be kept in mind that the
 actual sample size is the number of subjects, not the number of cells in
-the data set. At least a moderate number of subjects (\>30) are required
-for testing a subject-level variable using `nebula` simply because a
-small number of subjects are not enough to accurately estimate the
-subject-level overdispersion. As shown in the original article (He et
-al. 2021), even 30 subjects lead to mild inflated type I errors in most
-simulated scenarios. If the number of subjects is very small, methods
-designed for small sample size (e.g., DESeq2, edgeR) should be used for
-testing subject-level variables.
+the data set. At least a moderate number of subjects (&gt;30) are
+required for testing a subject-level variable using `nebula` simply
+because a small number of subjects are not enough to accurately estimate
+the subject-level overdispersion. As shown in the original article (He
+et al. 2021), even 30 subjects lead to mild inflated type I errors in
+most simulated scenarios. If the number of subjects is very small,
+methods designed for small sample size (e.g., DESeq2, edgeR) should be
+used for testing subject-level variables.
 
 In addition, when the ratio between the number of subjects and the
-number of subject-level variables is small (\<10), it is recommended to
-instead use a restricted maximum likelihood (REML) estimate, which is
+number of subject-level variables is small (&lt;10), it is recommended
+to instead use a restricted maximum likelihood (REML) estimate, which is
 provided in `nebula` through the argument `reml`. Please see (He et al.
 2021) for more details about the formula of REML. This is because the
 number of subject-level fixed-effects parameters should be much smaller
@@ -546,9 +665,7 @@ for `model='NBLMM'` in the current version.
 
 ### Example
 
-``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1,ncore=1)
-```
+    re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,model='NBLMM',reml=1,ncore=1)
 
 ## Testing contrasts
 
@@ -565,21 +682,19 @@ contains the elements in the lower triangular part including the
 diagonal. Here is an example to recover the covariance matrix from the
 output of `nebula`.
 
-``` r
-df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-cov= matrix(NA,4,4)
-cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
-cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
-cov
-#>               [,1]          [,2]         [,3]          [,4]
-#> [1,]  4.014261e-03  2.499051e-05 1.384999e-04 -5.197643e-05
-#> [2,]  2.499051e-05  1.249382e-03 9.212341e-06 -1.167080e-05
-#> [3,]  1.384999e-04  9.212341e-06 4.159507e-03  5.142249e-05
-#> [4,] -5.197643e-05 -1.167080e-05 5.142249e-05  4.732936e-03
-```
+    df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+    re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
+    cov= matrix(NA,4,4)
+    cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
+    cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
+    cov
+    #>               [,1]          [,2]         [,3]          [,4]
+    #> [1,]  4.014261e-03  2.499051e-05 1.384999e-04 -5.197643e-05
+    #> [2,]  2.499051e-05  1.249382e-03 9.212341e-06 -1.167080e-05
+    #> [3,]  1.384999e-04  9.212341e-06 4.159507e-03  5.142249e-05
+    #> [4,] -5.197643e-05 -1.167080e-05 5.142249e-05  4.732936e-03
 
 Note that if there are *K* variables, the covariance table in the output
 will have *(K+1)K/2* columns. So, for a large *K*, substantial increase
@@ -590,27 +705,25 @@ this example, we want to test whether the log(FC) of *X1* and *X2* are
 equal for the first gene. This hypothesis leads to the contrast vector
 `(0 1 -1 0)`. Thus, the test can be performed using the following code.
 
-``` r
-df = model.matrix(~X1+X2+cc, data=sample_data$pred)
-## the gene to test
-gene_i = 1
-## output covariance
-re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
-#> Remove  0  genes having low expression.
-#> Analyzing  10  genes with  30  subjects and  6176  cells.
-## recover the covariance matrix
-cov= matrix(NA,4,4)
-cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
-cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
-## build the contrast vector
-contrast = c(0,1,-1,0)
-## testing the hypothesis
-eff = sum(contrast*re_ln$summary[gene_i,1:4])
-p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
-p
-#>           [,1]
-#> [1,] 0.2692591
-```
+    df = model.matrix(~X1+X2+cc, data=sample_data$pred)
+    ## the gene to test
+    gene_i = 1
+    ## output covariance
+    re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
+    #> Remove  0  genes having low expression.
+    #> Analyzing  10  genes with  30  subjects and  6176  cells.
+    ## recover the covariance matrix
+    cov= matrix(NA,4,4)
+    cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
+    cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
+    ## build the contrast vector
+    contrast = c(0,1,-1,0)
+    ## testing the hypothesis
+    eff = sum(contrast*re_ln$summary[gene_i,1:4])
+    p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
+    p
+    #>           [,1]
+    #> [1,] 0.2692591
 
 ## Extracting marginal and conditional Pearson residuals
 
@@ -634,10 +747,8 @@ returned by `nebula` together with the same arguments including the
 count matrix, `id`, `pred` and `offset` used in running the `nebula`
 function. Here is an example.
 
-``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
-pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset)
-```
+    re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset)
+    pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset)
 
 The parameters `count`, `id`, `pred` and `offset` should be the same in
 these two functions. Then, the marginal Pearson residuals are available
@@ -649,9 +760,7 @@ To extract the conditional Pearson residuals, we need to first let
 `nebula` output subject-level random effects by setting `output_re=TRUE`
 when running `nebula` as shown below.
 
-``` r
-re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,output_re=TRUE)
-```
+    re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,output_re=TRUE)
 
 The returned object will include an *M* by *L* matrix of the random
 effects, where *L* is the number of subjects. In the current version,
@@ -659,9 +768,7 @@ this option does NOT support `model="PMM"`. Then, the conditional
 Pearson residuals can be extracted by running `nbresidual` with
 `conditional=TRUE`.
 
-``` r
-pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
-```
+    pres = nbresidual(re,count=sample_data$count,id=sample_data$sid,pred=df,offset=sample_data$offset,conditional=TRUE)
 
 ## Parallel computing
 

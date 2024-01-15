@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2023-11-21" />
+<meta name="date" content="2024-01-14" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -375,13 +375,13 @@ display: none;
 <h1 class="title toc-ignore">A fast negative binomial mixed model for
 analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2023-11-21</h4>
+<h4 class="date">2024-01-14</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#nebula-v1.5.1" id="toc-nebula-v1.5.1">NEBULA v1.5.1</a>
+<li><a href="#nebula-v1.5.2" id="toc-nebula-v1.5.2">NEBULA v1.5.2</a>
 <ul>
 <li><a href="#overview" id="toc-overview">Overview</a></li>
 <li><a href="#installation" id="toc-installation">Installation</a>
@@ -429,8 +429,8 @@ computing</a></li>
 </ul>
 </div>
 
-<div id="nebula-v1.5.1" class="section level1">
-<h1>NEBULA v1.5.1</h1>
+<div id="nebula-v1.5.2" class="section level1">
+<h1>NEBULA v1.5.2</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>The <em>nebula</em> package is an R package that provides fast
@@ -710,30 +710,30 @@ re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offs
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #&gt;       Subject      Cell    Subject      Cell
-#&gt; 1  0.08432326 0.9284701 0.08125256 0.8840821
-#&gt; 2  0.07455465 0.9726512 0.07102681 0.9255032
-#&gt; 3  0.17403264 0.9817571 0.17159404 0.9266395
-#&gt; 4  0.05352150 0.8516682 0.05026165 0.8124118
-#&gt; 5  0.07480034 1.3254379 0.07075366 1.2674146
-#&gt; 6  0.12372426 1.1653128 0.12086392 1.1096065
-#&gt; 7  0.07724823 0.9578170 0.07360445 0.9112956
-#&gt; 8  0.13797636 0.7991950 0.13571262 0.7549629
-#&gt; 9  0.05879485 0.8568851 0.05541398 0.8139652
-#&gt; 10 0.09782324 0.9940222 0.09496649 0.9410035</code></pre>
+#&gt; 1  0.08432322 0.9284703 0.08125256 0.8840821
+#&gt; 2  0.07455470 0.9726513 0.07102681 0.9255032
+#&gt; 3  0.17403276 0.9817570 0.17159404 0.9266395
+#&gt; 4  0.05352151 0.8516682 0.05026165 0.8124118
+#&gt; 5  0.07480031 1.3254380 0.07075366 1.2674146
+#&gt; 6  0.12372418 1.1653128 0.12086392 1.1096065
+#&gt; 7  0.07724824 0.9578169 0.07360445 0.9112956
+#&gt; 8  0.13797645 0.7991948 0.13571262 0.7549629
+#&gt; 9  0.05879493 0.8568853 0.05541398 0.8139652
+#&gt; 10 0.09782325 0.9940222 0.09496649 0.9410035</code></pre>
 <p>Such difference has little impact on testing fixed-effects predictors
 under this sample size.</p>
 <pre class="r"><code>## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #&gt;         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#&gt; 1  0.6373037 0.1346299   0.4950795 0.6354810 0.1291514   0.4919443
-#&gt; 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
+#&gt; 1  0.6373037 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
+#&gt; 2  0.9444825 0.3977111   0.7626828 0.9436079 0.3896819   0.7627706
 #&gt; 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
 #&gt; 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
 #&gt; 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
 #&gt; 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#&gt; 7  0.9216994 0.2230963   0.8977251 0.9225364 0.2151043   0.8987718
-#&gt; 8  0.7017083 0.4443602   0.3955343 0.7009654 0.4409831   0.3949916
-#&gt; 9  0.6505414 0.4561467   0.7238322 0.6489358 0.4473406   0.7209245
+#&gt; 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
+#&gt; 8  0.7017082 0.4443604   0.3955342 0.7009654 0.4409831   0.3949916
+#&gt; 9  0.6505414 0.4561469   0.7238323 0.6489358 0.4473406   0.7209245
 #&gt; 10 0.4199828 0.7510836   0.7308108 0.4183419 0.7476005   0.7293432</code></pre>
 <p>The bias of NEBULA-LN in estimating the cell-level overdispersion
 gets larger when the CPS value becomes lower or the gene expression is
@@ -951,7 +951,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">0.0686939</td>
 <td align="right">0</td>
 <td align="right">0.8754792</td>
-<td align="right">0.6276889</td>
+<td align="right">0.6276888</td>
 <td align="right">0.2549156</td>
 <td align="right">4</td>
 <td align="left">D</td>
@@ -1014,7 +1014,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">0.0800990</td>
 <td align="right">0.0656800</td>
 <td align="right">0</td>
-<td align="right">0.6741202</td>
+<td align="right">0.6741201</td>
 <td align="right">0.4455910</td>
 <td align="right">0.3782927</td>
 <td align="right">8</td>

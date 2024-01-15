@@ -358,7 +358,10 @@ Eigen::MatrixXd call_cumsumy(const Eigen::MappedSparseMatrix<double> count, cons
   {
     for (Eigen::MappedSparseMatrix<double>::InnerIterator it(count,i); it; ++it)
     {
-      temp[it.row()] += it.value();
+      if(it.value()>0)
+      {
+        temp[it.row()] += it.value();
+      }
     }
     if(i==(fid[temp_k+1]-1))
     {
@@ -391,8 +394,8 @@ Rcpp::List call_posindy(const Eigen::MappedSparseMatrix<double> count, const int
   for (Eigen::MappedSparseMatrix<double>::InnerIterator it(count,k); it; ++it)
   //for (Eigen::SparseVector<int>::InnerIterator it(cck); it; ++it)
   {
-    //if(it.value()>0)
-    //{
+    if(it.value()>0)
+    {
       temp[temp_k] = it.row();
       // temp[temp_k] = it.index();
       int vt = it.value();
@@ -410,15 +413,15 @@ Rcpp::List call_posindy(const Eigen::MappedSparseMatrix<double> count, const int
         }
       }
       temp_k++;
-    //}
+    }
   }
   // mct = mct/count.rows();
   mct = mct/nc;
   n_onetwo(0) = n_one;
   n_onetwo(1) = n_two;
 
-  return Rcpp::List::create(Rcpp::Named("posindy") = temp,
-                            Rcpp::Named("Y") = value,
+  return Rcpp::List::create(Rcpp::Named("posindy") = temp.head(temp_k),
+                            Rcpp::Named("Y") = value.head(temp_k),
                             Rcpp::Named("mct") = mct,
                             Rcpp::Named("n_onetwo") = n_onetwo,
                             Rcpp::Named("ytwo") = ytwo.head(nth));
@@ -1021,8 +1024,10 @@ Rcpp::List opt_pml(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map<Eig
     }
     // vb = X_c.transpose()*vb;
     vb = gamma*vb;
-    Eigen::MatrixXd temp = vwb.array().colwise()/vw.array();
-    vb2 = vb - vwb.transpose()*temp;
+    //Eigen::MatrixXd temp = vwb.array().colwise()/vw.array();
+    //vb2 = vb - vwb.transpose()*temp;
+    Eigen::MatrixXd temp = vwb.array().colwise()/vw.array().sqrt();
+    vb2 = vb - temp.transpose()*temp;
 
     Eigen::VectorXd dwvw = dw.array()/vw.array();
     // Eigen::VectorXd dbvwbvbdw = vb.ldlt().solve(db - vwb.transpose()*dwvw);
@@ -1331,8 +1336,10 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     }
     // vb = X_c.transpose()*vb;
     vb = gamma*vb;
-    Eigen::MatrixXd temp = vwb.array().colwise()/vw.array();
-    vb2 = vb - vwb.transpose()*temp;
+    // Eigen::MatrixXd temp = vwb.array().colwise()/vw.array();
+    // vb2 = vb - vwb.transpose()*temp;
+    Eigen::MatrixXd temp = vwb.array().colwise()/vw.array().sqrt();
+    vb2 = vb - temp.transpose()*temp;
 
     Eigen::VectorXd dwvw = dw.array()/vw.array();
     // Eigen::VectorXd dbvwbvbdw = vb.ldlt().solve(db - vwb.transpose()*dwvw);
