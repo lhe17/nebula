@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // pmg_ll_eigen
-double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXd& posind_c, const Eigen::VectorXd& posindy_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
+double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXi& posind_c, const Eigen::VectorXi& posindy_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
 RcppExport SEXP _nebula_pmg_ll_eigen(SEXP X_cSEXP, SEXP offset_cSEXP, SEXP Y_cSEXP, SEXP fid_cSEXP, SEXP cumsumy_cSEXP, SEXP posind_cSEXP, SEXP posindy_cSEXP, SEXP nind_cSEXP, SEXP k_cSEXP, SEXP beta_cSEXP, SEXP sigma_cSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -22,8 +22,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y_c(Y_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type fid_c(fid_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cumsumy_c(cumsumy_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posind_c(posind_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posindy_c(posindy_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posind_c(posind_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posindy_c(posindy_cSEXP);
     Rcpp::traits::input_parameter< const int >::type nind_c(nind_cSEXP);
     Rcpp::traits::input_parameter< const int >::type k_c(k_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type beta_c(beta_cSEXP);
@@ -33,7 +33,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // pmg_der_eigen
-Eigen::VectorXd pmg_der_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXd& posind_c, const Eigen::VectorXd& posindy_c, const int nb_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
+Eigen::VectorXd pmg_der_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXi& posind_c, const Eigen::VectorXi& posindy_c, const int nb_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
 RcppExport SEXP _nebula_pmg_der_eigen(SEXP X_cSEXP, SEXP offset_cSEXP, SEXP Y_cSEXP, SEXP fid_cSEXP, SEXP cumsumy_cSEXP, SEXP posind_cSEXP, SEXP posindy_cSEXP, SEXP nb_cSEXP, SEXP nind_cSEXP, SEXP k_cSEXP, SEXP beta_cSEXP, SEXP sigma_cSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -43,8 +43,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y_c(Y_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type fid_c(fid_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cumsumy_c(cumsumy_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posind_c(posind_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posindy_c(posindy_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posind_c(posind_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posindy_c(posindy_cSEXP);
     Rcpp::traits::input_parameter< const int >::type nb_c(nb_cSEXP);
     Rcpp::traits::input_parameter< const int >::type nind_c(nind_cSEXP);
     Rcpp::traits::input_parameter< const int >::type k_c(k_cSEXP);
@@ -55,7 +55,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // pmg_hes_eigen
-Eigen::MatrixXd pmg_hes_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXd& posind_c, const Eigen::VectorXd& posindy_c, const int nb_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
+Eigen::MatrixXd pmg_hes_eigen(const Eigen::Map<Eigen::MatrixXd>& X_c, const Eigen::VectorXd& offset_c, const Eigen::VectorXd& Y_c, const Eigen::VectorXd& fid_c, const Eigen::VectorXd& cumsumy_c, const Eigen::VectorXi& posind_c, const Eigen::VectorXi& posindy_c, const int nb_c, const int nind_c, const int k_c, const Eigen::VectorXd& beta_c, const double sigma_c);
 RcppExport SEXP _nebula_pmg_hes_eigen(SEXP X_cSEXP, SEXP offset_cSEXP, SEXP Y_cSEXP, SEXP fid_cSEXP, SEXP cumsumy_cSEXP, SEXP posind_cSEXP, SEXP posindy_cSEXP, SEXP nb_cSEXP, SEXP nind_cSEXP, SEXP k_cSEXP, SEXP beta_cSEXP, SEXP sigma_cSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -65,8 +65,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y_c(Y_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type fid_c(fid_cSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type cumsumy_c(cumsumy_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posind_c(posind_cSEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type posindy_c(posindy_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posind_c(posind_cSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXi& >::type posindy_c(posindy_cSEXP);
     Rcpp::traits::input_parameter< const int >::type nb_c(nb_cSEXP);
     Rcpp::traits::input_parameter< const int >::type nind_c(nind_cSEXP);
     Rcpp::traits::input_parameter< const int >::type k_c(k_cSEXP);

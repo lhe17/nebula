@@ -19,8 +19,8 @@ typedef Eigen::COLAMDOrdering<int> CO;
 // [[Rcpp::export]]
 double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::VectorXd & offset_c,
                     const Eigen::VectorXd & Y_c, const Eigen::VectorXd & fid_c,
-                    const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXd & posind_c,
-                    const Eigen::VectorXd & posindy_c, const int nind_c, const int k_c,
+                    const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXi & posind_c,
+                    const Eigen::VectorXi & posindy_c, const int nind_c, const int k_c,
                     const Eigen::VectorXd & beta_c,const double sigma_c)
 {
 
@@ -63,8 +63,8 @@ double pmg_ll_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Vector
 // [[Rcpp::export]]
 Eigen::VectorXd pmg_der_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::VectorXd & offset_c,
                               const Eigen::VectorXd & Y_c, const Eigen::VectorXd & fid_c,
-                              const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXd & posind_c,
-                              const Eigen::VectorXd & posindy_c, const int nb_c, const int nind_c, const int k_c,
+                              const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXi & posind_c,
+                              const Eigen::VectorXi & posindy_c, const int nb_c, const int nind_c, const int k_c,
                               const Eigen::VectorXd & beta_c,const double sigma_c)
 {
     Eigen::VectorXd der = Eigen::VectorXd::Zero(nb_c+1);
@@ -117,8 +117,8 @@ Eigen::VectorXd pmg_der_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eig
 // [[Rcpp::export]]
 Eigen::MatrixXd pmg_hes_eigen(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::VectorXd & offset_c,
                               const Eigen::VectorXd & Y_c, const Eigen::VectorXd & fid_c,
-                              const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXd & posind_c,
-                              const Eigen::VectorXd & posindy_c, const int nb_c, const int nind_c, const int k_c,
+                              const Eigen::VectorXd & cumsumy_c,const Eigen::VectorXi & posind_c,
+                              const Eigen::VectorXi & posindy_c, const int nb_c, const int nind_c, const int k_c,
                               const Eigen::VectorXd & beta_c,const double sigma_c)
 {
   
