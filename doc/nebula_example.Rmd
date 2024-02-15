@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.5.2
+# NEBULA v1.5.3
 
 ## Overview
 
