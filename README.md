@@ -1,4 +1,4 @@
--   [NEBULA v1.5.3](#nebula-v1.5.3)
+-   [NEBULA v1.5.4](#nebula-v1.5.4)
     -   [Overview](#overview)
     -   [Installation](#installation)
         -   [Most recent version](#most-recent-version)
@@ -27,7 +27,7 @@
     -   [Parallel computing](#parallel-computing)
     -   [References](#references)
 
-# NEBULA v1.5.3
+# NEBULA v1.5.4
 
 ## Overview
 
@@ -118,6 +118,9 @@ should equal the number of cells.
 ``` r
 head(sample_data$sid)
 #> [1] "1" "1" "1" "1" "1" "1"
+```
+
+``` r
 table(sample_data$sid)
 #> 
 #>   1  10  11  12  13  14  15  16  17  18  19   2  20  21  22  23  24  25  26  27 
@@ -142,6 +145,9 @@ head(sample_data$pred)
 #> 4 -0.1717715 0.9759191    case
 #> 5  0.2277492 0.9759191 control
 #> 6 -0.2635516 0.9759191 control
+```
+
+``` r
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 #>   (Intercept)         X1        X2 cccontrol
@@ -172,57 +178,60 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 #> Loading required package: foreach
 #> Loading required package: future
 #> Loading required package: rngtools
+```
+
+``` r
 re
 #> $summary
 #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
-#> 1          -1.902455 -0.016755225 -0.097867225     0.047278197     0.06335820
-#> 2          -2.046638 -0.002679074 -0.053812464    -0.022293899     0.06181112
-#> 3          -2.033211  0.017954707  0.002398445    -0.048296661     0.08695028
-#> 4          -2.008542 -0.005698984 -0.027780387     0.077357703     0.05509711
-#> 5          -1.979437  0.011557090 -0.025198987     0.032890493     0.06155853
-#> 6          -1.949991  0.013483039 -0.012548791    -0.031590577     0.07440949
-#> 7          -1.969248 -0.003531361  0.075230699    -0.009075031     0.06185028
-#> 8          -1.964371  0.013639930 -0.061302756    -0.059284665     0.07786361
-#> 9          -2.072699 -0.017372176 -0.043828288     0.026624998     0.05737632
-#> 10         -2.045646  0.030742876  0.022260805    -0.025516032     0.06842796
+#> 1          -1.902457 -0.016755180 -0.097867267     0.047278098     0.06335897
+#> 2          -2.046637 -0.002679054 -0.053812453    -0.022294107     0.06181011
+#> 3          -2.033209  0.017954689  0.002398447    -0.048296726     0.08694928
+#> 4          -2.008542 -0.005698976 -0.027780396     0.077357735     0.05509738
+#> 5          -1.979436  0.011557079 -0.025199025     0.032890444     0.06155816
+#> 6          -1.949991  0.013482980 -0.012548767    -0.031590514     0.07440951
+#> 7          -1.969248 -0.003531343  0.075230695    -0.009074977     0.06185020
+#> 8          -1.964370  0.013639918 -0.061302753    -0.059284647     0.07786339
+#> 9          -2.072699 -0.017372167 -0.043828287     0.026624971     0.05737647
+#> 10         -2.045647  0.030742882  0.022260753    -0.025516023     0.06842850
 #>         se_X1      se_X2 se_cccontrol p_(Intercept)      p_X1      p_X2
-#> 1  0.03534659 0.06449424   0.06879634 4.362617e-198 0.6354810 0.1291514
-#> 2  0.03787429 0.06255849   0.07385888 2.052788e-240 0.9436079 0.3896819
-#> 3  0.03696089 0.09238230   0.07258521 6.275230e-121 0.6271261 0.9792875
-#> 4  0.03704556 0.05624824   0.07252600 5.822948e-291 0.8777381 0.6213846
-#> 5  0.03750948 0.06101307   0.07331551 7.432319e-227 0.7579977 0.6795995
-#> 6  0.03623477 0.07321208   0.07087566 2.257914e-151 0.7098168 0.8639067
-#> 7  0.03631619 0.06068697   0.07133730 1.872102e-222 0.9225364 0.2151043
-#> 8  0.03551903 0.07955877   0.06969748 1.957495e-140 0.7009654 0.4409831
-#> 9  0.03816039 0.05767972   0.07453316 9.307495e-286 0.6489358 0.4473406
-#> 10 0.03798694 0.06917485   0.07374591 2.292903e-196 0.4183419 0.7476005
+#> 1  0.03534665 0.06449504   0.06879645 4.407915e-198 0.6354824 0.1291559
+#> 2  0.03787441 0.06255745   0.07385911 2.018173e-240 0.9436085 0.3896741
+#> 3  0.03696086 0.09238122   0.07258516 6.239478e-121 0.6271262 0.9792873
+#> 4  0.03704556 0.05624852   0.07252600 5.859958e-291 0.8777383 0.6213862
+#> 5  0.03750934 0.06101270   0.07331526 7.388137e-227 0.7579971 0.6795972
+#> 6  0.03623485 0.07321210   0.07087582 2.258269e-151 0.7098186 0.8639070
+#> 7  0.03631614 0.06068688   0.07133720 1.869576e-222 0.9225366 0.2151037
+#> 8  0.03551903 0.07955854   0.06969749 1.954205e-140 0.7009657 0.4409818
+#> 9  0.03816042 0.05767988   0.07453323 9.339085e-286 0.6489363 0.4473419
+#> 10 0.03798712 0.06917539   0.07374624 2.307966e-196 0.4183440 0.7476030
 #>    p_cccontrol gene_id gene
-#> 1    0.4919443       1    A
-#> 2    0.7627706       2    B
-#> 3    0.5058082       3    C
-#> 4    0.2861434       4    D
-#> 5    0.6537089       5    E
-#> 6    0.6558008       6    F
-#> 7    0.8987718       7    G
-#> 8    0.3949916       8    H
-#> 9    0.7209245       9    I
-#> 10   0.7293432      10    J
+#> 1    0.4919459       1    A
+#> 2    0.7627691       2    B
+#> 3    0.5058073       3    C
+#> 4    0.2861431       4    D
+#> 5    0.6537082       5    E
+#> 6    0.6558021       6    F
+#> 7    0.8987723       7    G
+#> 8    0.3949919       8    H
+#> 9    0.7209250       9    I
+#> 10   0.7293445      10    J
 #> 
 #> $overdispersion
 #>       Subject      Cell
-#> 1  0.08125256 0.8840821
-#> 2  0.07102681 0.9255032
-#> 3  0.17159404 0.9266395
-#> 4  0.05026165 0.8124118
-#> 5  0.07075366 1.2674146
-#> 6  0.12086392 1.1096065
-#> 7  0.07360445 0.9112956
-#> 8  0.13571262 0.7549629
-#> 9  0.05541398 0.8139652
-#> 10 0.09496649 0.9410035
+#> 1  0.08125517 0.8841025
+#> 2  0.07102309 0.9255555
+#> 3  0.17158971 0.9266305
+#> 4  0.05026251 0.8124106
+#> 5  0.07075263 1.2673605
+#> 6  0.12086386 1.1096374
+#> 7  0.07360425 0.9112745
+#> 8  0.13571170 0.7549660
+#> 9  0.05541442 0.8139795
+#> 10 0.09496816 0.9410738
 #> 
 #> $convergence
-#>  [1] 1 1 1 1 1 1 1 1 1 1
+#>  [1]   1   1 -10   1   1   1   1   1   1   1
 #> 
 #> $algorithm
 #>  [1] "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)" "NBGMM (LN)"
@@ -331,22 +340,28 @@ between NEBULA-LN and NEBULA-HL is ~5% for most genes.
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
+```
+
+``` r
 re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
+```
+
+``` r
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
-#> 1  0.08432318 0.9284699 0.08125256 0.8840821
-#> 2  0.07455464 0.9726513 0.07102681 0.9255032
-#> 3  0.17403263 0.9817569 0.17159404 0.9266395
-#> 4  0.05352153 0.8516679 0.05026165 0.8124118
-#> 5  0.07480033 1.3254379 0.07075366 1.2674146
-#> 6  0.12372424 1.1653129 0.12086392 1.1096065
-#> 7  0.07724825 0.9578169 0.07360445 0.9112956
-#> 8  0.13797645 0.7991948 0.13571262 0.7549629
-#> 9  0.05879495 0.8568850 0.05541398 0.8139652
-#> 10 0.09782333 0.9940222 0.09496649 0.9410035
+#> 1  0.08432323 0.9284704 0.08125517 0.8841025
+#> 2  0.07455463 0.9726515 0.07102309 0.9255555
+#> 3  0.17403264 0.9817572 0.17158971 0.9266305
+#> 4  0.05352148 0.8516683 0.05026251 0.8124106
+#> 5  0.07480027 1.3254381 0.07075263 1.2673605
+#> 6  0.12372426 1.1653128 0.12086386 1.1096374
+#> 7  0.07724826 0.9578169 0.07360425 0.9112745
+#> 8  0.13797639 0.7991956 0.13571170 0.7549660
+#> 9  0.05879489 0.8568851 0.05541442 0.8139795
+#> 10 0.09782331 0.9940225 0.09496816 0.9410738
 ```
 
 Such difference has little impact on testing fixed-effects predictors
@@ -356,16 +371,16 @@ under this sample size.
 ## compare the p-values for testing the predictors using NEBULA-LN and NEBULA-HL
 cbind(re_hl$summary[,10:12],re_ln$summary[,10:12])
 #>         p_X1      p_X2 p_cccontrol      p_X1      p_X2 p_cccontrol
-#> 1  0.6373036 0.1346298   0.4950795 0.6354810 0.1291514   0.4919443
-#> 2  0.9444825 0.3977109   0.7626827 0.9436079 0.3896819   0.7627706
-#> 3  0.6282384 0.9787881   0.5087304 0.6271261 0.9792875   0.5058082
-#> 4  0.8786074 0.6278827   0.2868256 0.8777381 0.6213846   0.2861434
-#> 5  0.7596198 0.6872259   0.6544751 0.7579977 0.6795995   0.6537089
-#> 6  0.7134192 0.8656686   0.6576835 0.7098168 0.8639067   0.6558008
-#> 7  0.9216994 0.2230964   0.8977251 0.9225364 0.2151043   0.8987718
-#> 8  0.7017082 0.4443604   0.3955342 0.7009654 0.4409831   0.3949916
-#> 9  0.6505414 0.4561470   0.7238323 0.6489358 0.4473406   0.7209245
-#> 10 0.4199828 0.7510837   0.7308108 0.4183419 0.7476005   0.7293432
+#> 1  0.6373037 0.1346298   0.4950795 0.6354824 0.1291559   0.4919459
+#> 2  0.9444825 0.3977109   0.7626827 0.9436085 0.3896741   0.7627691
+#> 3  0.6282384 0.9787881   0.5087304 0.6271262 0.9792873   0.5058073
+#> 4  0.8786074 0.6278826   0.2868256 0.8777383 0.6213862   0.2861431
+#> 5  0.7596198 0.6872258   0.6544751 0.7579971 0.6795972   0.6537082
+#> 6  0.7134192 0.8656686   0.6576835 0.7098186 0.8639070   0.6558021
+#> 7  0.9216994 0.2230964   0.8977251 0.9225366 0.2151037   0.8987723
+#> 8  0.7017083 0.4443603   0.3955343 0.7009657 0.4409818   0.3949919
+#> 9  0.6505414 0.4561468   0.7238322 0.6489363 0.4473419   0.7209250
+#> 10 0.4199828 0.7510837   0.7308108 0.4183440 0.7476030   0.7293445
 ```
 
 The bias of NEBULA-LN in estimating the cell-level overdispersion gets
@@ -415,14 +430,15 @@ important information for quality control to filter out genes of which
 the estimation procedure potentially does not converge. Generally, a
 convergence code ≤ -20 suggests that the algorithm does not converge
 well. The results should be interpreted with caution in these cases. The
-detailed information about the convergence codes is listed below. The
+detailed information about the convergence codes is listed below. A
 failure of convergence may occur when the sample size is very small,
-there are too few positive counts, or the gene has huge overdispersions.
-In these cases, the likelihood can be flat, might reach the maximum at
-the infinity, or the optimization is sensitive to the initial values.
-For those genes that have a bad convergence code, in many cases, trying
-a different negative binomial mixed model (e.g., NBLMM, see below for
-more details) may solve the problem.
+there are too few positive counts, an extreme distribution in some
+predictor, or the gene has huge overdispersions. In these cases, the
+likelihood can be flat, might reach the maximum at the infinity, or the
+optimization is sensitive to the initial values. For those genes that
+have a bad convergence code, in many cases, trying a different negative
+binomial mixed model (e.g., NBLMM, see below for more details) or the
+other optimization algorithm may solve the problem.
 
 -   Information about the convergence code:
     -   1: The convergence is reached due to a sufficiently small
@@ -438,8 +454,8 @@ more details) may solve the problem.
         returns NaN.  
     -   (!) -40: The convergence fails because the critical point is not
         reached and no improvement of the function value can be found.
-    -   (!) -50: Only used for the PMM, indicating a failure of
-        convergence.
+    -   (!) -50: A failure of convergence in the estimation of
+        overdispersions.
     -   (!) -60: At least one of the estimated overdispersions reaches
         its upper bound.
 
@@ -447,20 +463,20 @@ Depending on the concrete application, the estimated gene-specific
 overdispersions can also be taken into consideration in quality control.
 For example, when testing differential expression for a variable, genes
 with a very large estimated cell-level overdispersion should be filtered
-out because such genes have huge unexplained noises. A large cell-level
+out because such genes have huge unexplained noise. A large cell-level
 overdispersion is generally rare in UMI-based single cell data,
-especially among abundantly expressed genes, but more common in e.g.,
-SMART-seq2 as PCR duplicates introduce substantial noises. It might be
-hard to give a precise cut-off for a large overdispersion because it
-also depends on the sample size of the data. Based on the empirical
-simulation study in (He et al. 2021), genes with an estimated cell-level
-overdispersion \>100 should be removed for a data set with at least 50
-cells per subject. On the other hand, if the purpose is to extract
-residuals for downstream analysis such as clustering, genes with a large
-cell-level overdispersion might be preferable because they have large
-variations. If the variable of interest is subject-level, genes with a
-very large subject-level overdispersion (\>1) should be removed or
-interpreted cautiously as well.
+especially among abundantly expressed genes, but is more common in e.g.,
+SMART-seq2 because PCR duplicates often introduce substantial noise. It
+might be hard to give a precise cut-off for a large overdispersion
+because it also depends on the sample size of the data. Based on the
+empirical simulation study in (He et al. 2021), genes with an estimated
+cell-level overdispersion \>100 should be removed for a data set with at
+least 50 cells per subject. On the other hand, if the purpose is to
+extract residuals for downstream analysis such as clustering, genes with
+a large cell-level overdispersion might be preferable because they have
+large variations. If the variable of interest is subject-level, genes
+with a very large subject-level overdispersion (\>1) should be removed
+or interpreted cautiously as well.
 
 ## Using other mixed models
 
@@ -490,7 +506,7 @@ re = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,
 |-------:|----:|----:|------:|------:|----:|----:|-----:|-----:|----:|----:|-----:|---:|:--|
 |          -1.903559 | -0.0155807 | -0.0976567 |       0.0511051 |       0.0661288 | 0.0329114 | 0.0655551 |    0.0642298 |              0 | 0.6359176 | 0.1363061 |   0.4262299 |       1 | A    |
 |          -2.047864 | -0.0032670 | -0.0536887 |      -0.0189269 |       0.0644332 | 0.0355074 | 0.0635450 |    0.0694853 |              0 | 0.9266904 | 0.3981703 |   0.7853239 |       2 | B    |
-|          -2.032603 |  0.0179868 |  0.0009264 |      -0.0505295 |       0.0908162 | 0.0345496 | 0.0932444 |    0.0676704 |              0 | 0.6026385 | 0.9920732 |   0.4552440 |       3 | C    |
+|          -2.032603 |  0.0179868 |  0.0009264 |      -0.0505295 |       0.0908162 | 0.0345496 | 0.0932444 |    0.0676704 |              0 | 0.6026385 | 0.9920733 |   0.4552440 |       3 | C    |
 |          -2.009743 | -0.0055009 | -0.0278638 |       0.0782083 |       0.0573206 | 0.0350744 | 0.0574457 |    0.0686939 |              0 | 0.8753743 | 0.6276435 |   0.2549097 |       4 | D    |
 |          -1.980527 |  0.0106340 | -0.0248788 |       0.0312191 |       0.0644293 | 0.0343354 | 0.0621582 |    0.0671645 |              0 | 0.7567817 | 0.6889725 |   0.6420637 |       5 | E    |
 |          -1.950454 |  0.0160303 | -0.0134764 |      -0.0345278 |       0.0778201 | 0.0333858 | 0.0738508 |    0.0650410 |              0 | 0.6311185 | 0.8552054 |   0.5955144 |       6 | F    |
@@ -558,15 +574,18 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
+```
+
+``` r
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
 cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
 cov
 #>               [,1]          [,2]         [,3]          [,4]
-#> [1,]  4.014261e-03  2.499051e-05 1.384999e-04 -5.197643e-05
-#> [2,]  2.499051e-05  1.249382e-03 9.212341e-06 -1.167080e-05
-#> [3,]  1.384999e-04  9.212341e-06 4.159507e-03  5.142249e-05
-#> [4,] -5.197643e-05 -1.167080e-05 5.142249e-05  4.732936e-03
+#> [1,]  4.014359e-03  2.499057e-05 1.385013e-04 -5.197643e-05
+#> [2,]  2.499057e-05  1.249386e-03 9.212545e-06 -1.167104e-05
+#> [3,]  1.385013e-04  9.212545e-06 4.159610e-03  5.142283e-05
+#> [4,] -5.197643e-05 -1.167104e-05 5.142283e-05  4.732951e-03
 ```
 
 Note that if there are *K* variables, the covariance table in the output
@@ -586,6 +605,9 @@ gene_i = 1
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
+```
+
+``` r
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])
@@ -597,7 +619,7 @@ eff = sum(contrast*re_ln$summary[gene_i,1:4])
 p = pchisq(eff^2/(t(contrast)%*%cov%*%contrast),1,lower.tail=FALSE)
 p
 #>           [,1]
-#> [1,] 0.2692591
+#> [1,] 0.2692633
 ```
 
 ## Extracting marginal and conditional Pearson residuals

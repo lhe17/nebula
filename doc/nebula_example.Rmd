@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# NEBULA v1.5.3
+# NEBULA v1.5.4
 
 ## Overview
 
@@ -154,7 +154,7 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
 
 ## Checking convergence for the summary statistics and quality control
 
-*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code $\leq$ -20 suggests that the algorithm does not converge well. The results should be interpreted with caution in these cases. The detailed information about the convergence codes is listed below. The failure of convergence may occur when the sample size is very small, there are too few positive counts, or the gene has huge overdispersions. In these cases, the likelihood can be flat, might reach the maximum at the infinity, or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) may solve the problem. 
+*nebula* reports convergence information about the estimation algorithm for each gene along with the summary statistics. This is useful and important information for quality control to filter out genes of which the estimation procedure potentially does not converge. Generally, a convergence code $\leq$ -20 suggests that the algorithm does not converge well. The results should be interpreted with caution in these cases. The detailed information about the convergence codes is listed below. A failure of convergence may occur when the sample size is very small, there are too few positive counts, an extreme distribution in some predictor, or the gene has huge overdispersions. In these cases, the likelihood can be flat, might reach the maximum at the infinity, or the optimization is sensitive to the initial values. For those genes that have a bad convergence code, in many cases, trying a different negative binomial mixed model (e.g., NBLMM, see below for more details) or the other optimization algorithm may solve the problem. 
 
 * Information about the convergence code:
   + 1: The convergence is reached due to a sufficiently small improvement of the function value.
@@ -163,10 +163,10 @@ NEBULA-HL automatically uses a higher-order Laplace approximation for low-expres
   + (!) -25: The Hessian matrix is either almost singular or not positive definite.
   + (!) -30: The convergence fails because the likelihood function returns NaN.  
   + (!) -40: The convergence fails because the critical point is not reached and no improvement of the function value can be found.
-  + (!) -50: Only used for the PMM, indicating a failure of convergence.
+  + (!) -50: A failure of convergence in the estimation of overdispersions.
   + (!) -60: At least one of the estimated overdispersions reaches its upper bound.
 
-Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noises. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but more common in e.g., SMART-seq2 as PCR duplicates introduce substantial noises. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in [@He_2021], genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well.
+Depending on the concrete application, the estimated gene-specific overdispersions can also be taken into consideration in quality control. For example, when testing differential expression for a variable, genes with a very large estimated cell-level overdispersion should be filtered out because such genes have huge unexplained noise. A large cell-level overdispersion is generally rare in UMI-based single cell data, especially among abundantly expressed genes, but is more common in e.g., SMART-seq2 because PCR duplicates often introduce substantial noise. It might be hard to give a precise cut-off for a large overdispersion because it also depends on the sample size of the data. Based on the empirical simulation study in [@He_2021], genes with an estimated cell-level overdispersion >100 should be removed for a data set with at least 50 cells per subject. On the other hand, if the purpose is to extract residuals for downstream analysis such as clustering, genes with a large cell-level overdispersion might be preferable because they have large variations. If the variable of interest is subject-level, genes with a very large subject-level overdispersion (>1) should be removed or interpreted cautiously as well.
 
 ## Using other mixed models
 
