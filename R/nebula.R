@@ -197,20 +197,25 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
         )
         if(opt=='lbfgs')
         {
-          ref = ref$par
+          refp = ref$par
           is_conv = ifelse(ref$convergence<0,0,1)
         }else{
-          ref = ref$argument
-          ref[nb+1] = median(c(exp(ref[nb+1]),min[1],max[1]))
-          ref[nb+2] = median(c(exp(ref[nb+2]),min[2],max[2]))
+          refp = ref$argument
+          refp[nb+1] = median(c(exp(refp[nb+1]),min[1],max[1]))
+          refp[nb+2] = median(c(exp(refp[nb+2]),min[2],max[2]))
           is_conv = ifelse(ref$converged==TRUE,1,0)
         }
-        c(ref,is_conv)
+        c(refp,is_conv)
       }, error = function(e) {
+        tryCatch({
         ref = nlminb(start=c(para,1,cell_init), objective=ptmg_ll,gradient=ptmg_der,posindy = posv$posindy, X = pred, offset = offset, Y = posv$Y, n_one = posv$n_onetwo,
                      ytwo = posv$ytwo, fam = id, fid = fid, cumsumy = cumsumy[i,], posind = posind[[i]], nb = nb, k = k,
                      nind = nind, lower = lower, upper = upper)
         c(ref$par,ifelse(ref$convergence==0,1,0))
+        }, error = function(er)
+        {
+          c(para,1,cell_init,0)
+        })
       })
       # betae = re_t$par[1:nb]
       conv = re_t[length(re_t)]

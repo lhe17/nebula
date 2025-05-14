@@ -1,8 +1,8 @@
 Package: nebula
 Type: Package
 Title: Negative Binomial Mixed Models Using Large-Sample Approximation for Differential Expression Analysis of ScRNA-Seq Data
-Version: 1.5.4
-Date: 2025-03-24
+Version: 1.5.5
+Date: 2025-05-13
 Authors@R: c(
     person("Liang", "He", email = "hyx520101@gmail.com", role = c("aut", "cre")),
     person("Raghav", "Sharma", email = "raghavv.sharma@mail.utoronto.ca", role = "ctb"))
