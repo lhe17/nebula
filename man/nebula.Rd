@@ -66,7 +66,7 @@ nebula(
 \item{fmaxsize}{The maximum allowed total size (in bytes) of global variables (future.globals.maxSize) when using parallel computing.}
 }
 \value{
-summary: The estimated coefficient, standard error and p-value for each predictor.
+summary: The estimated coefficient (logFC_), standard error (se_) and p-value (p_) for each predictor.
 
 overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 
