@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 -   [NEBULA v1.5.5](#nebula-v1.5.5)
     -   [Overview](#overview)
     -   [Installation](#installation)
@@ -27,47 +26,6 @@
         residuals](#extracting-marginal-and-conditional-pearson-residuals)
     -   [Parallel computing](#parallel-computing)
     -   [References](#references)
-=======
--   <a href="#nebula-v1.4.1" id="toc-nebula-v1.4.1">NEBULA v1.4.1</a>
-    -   <a href="#overview" id="toc-overview">Overview</a>
-    -   <a href="#installation" id="toc-installation">Installation</a>
-        -   <a href="#most-recent-version" id="toc-most-recent-version">Most recent
-            version</a>
-    -   <a href="#functions" id="toc-functions">Functions</a>
-    -   <a href="#basic-usage" id="toc-basic-usage">Basic usage</a>
-        -   <a href="#example" id="toc-example">Example</a>
-        -   <a href="#Using Seurat/SingleCellExperiment Objects"
-            id="toc-using-seurat/singleCellExperiment-objects"> 
-            Using Seurat/SingleCellExperiment Objects</a>
-    -   <a href="#specifying-scaling-factors"
-        id="toc-specifying-scaling-factors">Specifying scaling factors</a>
-        -   <a href="#example-1" id="toc-example-1">Example</a>
-    -   <a href="#difference-between-nebula-ln-and-nebula-hl"
-        id="toc-difference-between-nebula-ln-and-nebula-hl">Difference between
-        NEBULA-LN and NEBULA-HL</a>
-    -   <a href="#filtering-low-expression-genes"
-        id="toc-filtering-low-expression-genes">Filtering low-expression
-        genes</a>
-    -   <a
-        href="#checking-convergence-for-the-summary-statistics-and-quality-control"
-        id="toc-checking-convergence-for-the-summary-statistics-and-quality-control">Checking
-        convergence for the summary statistics and quality control</a>
-    -   <a href="#using-other-mixed-models"
-        id="toc-using-other-mixed-models">Using other mixed models</a>
-        -   <a href="#example-2" id="toc-example-2">Example</a>
-    -   <a href="#special-attention-paid-to-testing-subject-level-variables"
-        id="toc-special-attention-paid-to-testing-subject-level-variables">Special
-        attention paid to testing subject-level variables</a>
-        -   <a href="#example-3" id="toc-example-3">Example</a>
-    -   <a href="#testing-contrasts" id="toc-testing-contrasts">Testing
-        contrasts</a>
-    -   <a href="#extracting-marginal-and-conditional-pearson-residuals"
-        id="toc-extracting-marginal-and-conditional-pearson-residuals">Extracting
-        marginal and conditional Pearson residuals</a>
-    -   <a href="#parallel-computing" id="toc-parallel-computing">Parallel
-        computing</a>
-    -   <a href="#references" id="toc-references">References</a>
->>>>>>> 88a78cc (Created scToNeb.R and updated README)
 
 # NEBULA v1.5.5
 
@@ -117,13 +75,8 @@ The current version provides the following functions.
     matrix and subject IDs.
 -   `group_cell`: reorders cells to group them by the subject IDs.
 -   `nbresidual`: extracts Pearson residuals from the fitted model.
-<<<<<<< HEAD
 -   `scToNeb`: retrieves data from `Seurat` or `SingleCellExperiment`
     for calling `nebula`.
-=======
--   `scToNeb`: converts a single-cell count matrix from `Seurat` or 
-    `SingleCellExperiment` to a list.
->>>>>>> 88a78cc (Created scToNeb.R and updated README)
 
 ## Basic usage
 
@@ -309,37 +262,6 @@ re = nebula(data_g$count,data_g$id,pred=data_g$pred)
 If `pred` is not specified, `nebula` will fit the model with an
 intercept term by default. This can be used when only the
 overdispersions are of interest.
-
-## Using Seurat/SingleCellExperiment Objects
-
-If a single cell data processing package such as `Seurat` or 
-`SingleCellExperiment` was used, nebula can be easily implemented using 
-the assistance of the helper function `scToNeb`. Assuming object 
-metadata relevant to subject ids and predictors are available in the 
-object, `scToNeb` can retrieve and organize these objects and output 
-a list that is similar to the list provided in this vignette. With 
-`Seurat` objects, the assay can also be specified to fit data from
-other assays. The ```nebula``` package contains a sample Seurat object
-obtained from [@seurat_object] (https://github.com/satijalab/seurat-data) 
-comprised of pancreatic cells across eight samples.
-
-### Example
-
-```r
-library(nebula)
-library(Seurat)
-
-data("sample_seurat")
-re <- scToNeb(obj = seu_obj, assay = "RNA", sid = "replicate",
-              pred = c("celltype", "tech"))
-```
-
-The output will be a list with the first element containg `counts`, 
-the second containing a `data.frame` with all listed predictors, 
-and the third containng a character vector with all subject ids. 
-If subject ids are unordered, `group_cell` can be used. Users 
-can also input scaling factors that may be stored within the 
-object's metadata as a string in the `offset` argument. 
 
 ## Specifying scaling factors
 
