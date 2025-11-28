@@ -11,7 +11,7 @@
 
 <meta name="author" content="Liang He" />
 
-<meta name="date" content="2025-05-13" />
+<meta name="date" content="2025-11-28" />
 
 <title>A fast negative binomial mixed model for analyzing multi-subject single-cell data</title>
 
@@ -258,6 +258,7 @@ if (window.hljs) {
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
+margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -375,13 +376,13 @@ display: none;
 <h1 class="title toc-ignore">A fast negative binomial mixed model for
 analyzing multi-subject single-cell data</h1>
 <h4 class="author">Liang He</h4>
-<h4 class="date">2025-05-13</h4>
+<h4 class="date">2025-11-28</h4>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#nebula-v1.5.5" id="toc-nebula-v1.5.5">NEBULA v1.5.5</a>
+<li><a href="#nebula-v1.5.6" id="toc-nebula-v1.5.6">NEBULA v1.5.6</a>
 <ul>
 <li><a href="#overview" id="toc-overview">Overview</a></li>
 <li><a href="#installation" id="toc-installation">Installation</a>
@@ -429,8 +430,8 @@ computing</a></li>
 </ul>
 </div>
 
-<div id="nebula-v1.5.5" class="section level1">
-<h1>NEBULA v1.5.5</h1>
+<div id="nebula-v1.5.6" class="section level1">
+<h1>NEBULA v1.5.6</h1>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>The <em>nebula</em> package is an R package that provides fast
@@ -875,7 +876,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <col width="3%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th align="right">logFC_(Intercept)</th>
 <th align="right">logFC_X1</th>
 <th align="right">logFC_X2</th>
@@ -893,7 +894,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td align="right">-1.903559</td>
 <td align="right">-0.0155807</td>
 <td align="right">-0.0976567</td>
@@ -909,7 +910,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">1</td>
 <td align="left">A</td>
 </tr>
-<tr class="even">
+<tr>
 <td align="right">-2.047864</td>
 <td align="right">-0.0032670</td>
 <td align="right">-0.0536887</td>
@@ -925,7 +926,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">2</td>
 <td align="left">B</td>
 </tr>
-<tr class="odd">
+<tr>
 <td align="right">-2.032603</td>
 <td align="right">0.0179868</td>
 <td align="right">0.0009264</td>
@@ -941,7 +942,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">3</td>
 <td align="left">C</td>
 </tr>
-<tr class="even">
+<tr>
 <td align="right">-2.009743</td>
 <td align="right">-0.0055009</td>
 <td align="right">-0.0278638</td>
@@ -957,7 +958,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">4</td>
 <td align="left">D</td>
 </tr>
-<tr class="odd">
+<tr>
 <td align="right">-1.980527</td>
 <td align="right">0.0106340</td>
 <td align="right">-0.0248788</td>
@@ -973,7 +974,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">5</td>
 <td align="left">E</td>
 </tr>
-<tr class="even">
+<tr>
 <td align="right">-1.950454</td>
 <td align="right">0.0160303</td>
 <td align="right">-0.0134764</td>
@@ -989,7 +990,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">6</td>
 <td align="left">F</td>
 </tr>
-<tr class="odd">
+<tr>
 <td align="right">-1.970271</td>
 <td align="right">-0.0026762</td>
 <td align="right">0.0750061</td>
@@ -1005,7 +1006,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">7</td>
 <td align="left">G</td>
 </tr>
-<tr class="even">
+<tr>
 <td align="right">-1.964322</td>
 <td align="right">0.0141545</td>
 <td align="right">-0.0610982</td>
@@ -1021,7 +1022,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">8</td>
 <td align="left">H</td>
 </tr>
-<tr class="odd">
+<tr>
 <td align="right">-2.074035</td>
 <td align="right">-0.0178188</td>
 <td align="right">-0.0436111</td>
@@ -1037,7 +1038,7 @@ Here is an example of using the PMM to fit the example data set.</p>
 <td align="right">9</td>
 <td align="left">I</td>
 </tr>
-<tr class="even">
+<tr>
 <td align="right">-2.046058</td>
 <td align="right">0.0307022</td>
 <td align="right">0.0227234</td>
@@ -1216,7 +1217,7 @@ exceeds the speed gain.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="unnumbered">References</h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-He_2021" class="csl-entry">
 He, Liang, Jose Davila-Velderrain, Tomokazu S. Sumida, David A. Hafler,
 Manolis Kellis, and Alexander M. Kulminski. 2021. <span>“NEBULA Is a

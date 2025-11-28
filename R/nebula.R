@@ -20,7 +20,7 @@
 #' @param reml Either 0 (default) or 1. If it is one, REML will be used to estimate the overdispersions.
 #' @param ncore The number of cores used for parallel computing.
 #' @param fmaxsize The maximum allowed total size (in bytes) of global variables (future.globals.maxSize) when using parallel computing.
-#' @return summary: The estimated coefficient, standard error and p-value for each predictor.
+#' @return summary: The estimated coefficient (logFC_), standard error (se_) and p-value (p_) for each predictor.
 #' @return overdispersion: The estimated cell-level and subject-level overdispersions \eqn{\sigma^2} and \eqn{\phi^{-1}}.
 #' @return convergence: More information about the convergence of the algorithm for each gene. A value of -20 or lower indicates a potential failure of the convergence. A value of one indicates that the convergence is reached due to a sufficiently small improvement of the function value. A value of -10 indicates that the convergence is reached because the gradients are close to zero (i.e., the critical point) and no improvement of the function value can be found.    
 #' @return algorithm: The algorithm used for analyzing the gene. More information can be found in the vignettes.
@@ -50,7 +50,13 @@ nebula = function (count, id, pred = NULL, offset = NULL,min = c(1e-4,1e-4), max
     }
     ncore <- maxcore
   }
+  
+  ## restore future.globals.maxSize on quitting this function
+  original_max_size <- getOption("future.globals.maxSize")
   options(future.globals.maxSize=fmaxsize)
+  on.exit({
+    options(future.globals.maxSize = original_max_size)
+  })
   
   eps = 1e-06
   
