@@ -41,7 +41,7 @@ library(devtools)
 install_github("lhe17/nebula")
 ```
 
-During installation, the *nebula* package may first install the *Rfast* package, which requires the presence of GSL in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0. Starting from version 1.2.0, *nebula* is no longer compatible with R-3.6 or earlier versions of R. Users who have R-3.6 may install version 1.1.8 via R-forge (https://r-forge.r-project.org/R/?group_id=2407). However, it is not recommended to use an older version of *nebula*. 
+During installation, the *nebula* package may first install the *Rfast* package, which requires the presence of GSL in the environment. The installation also requires Rcpp-1.0.7 and has been tested on R-4.4.0. Starting from version 1.5.7, *nebula* requires R-4.4.0+. Starting from version 1.2.0, *nebula* is no longer compatible with R-3.6 or earlier versions of R. Users who have R-3.6 may install version 1.1.8 via R-forge (https://r-forge.r-project.org/R/?group_id=2407). However, it is not recommended to use an older version of *nebula*. 
 
 Please contact hyx520101@gmail.com for more information.
 
