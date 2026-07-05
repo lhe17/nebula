@@ -1,33 +1,32 @@
--   [NEBULA v1.5.6](#nebula-v1.5.6)
-    -   [Overview](#overview)
-    -   [Installation](#installation)
-        -   [Most recent version](#most-recent-version)
-    -   [Functions](#functions)
-    -   [Basic usage](#basic-usage)
-        -   [Example](#example)
-    -   [Specifying scaling factors](#specifying-scaling-factors)
-        -   [Example](#example-1)
-    -   [Using Seurat/SingleCellExperiment
-        Objects](#using-seuratsinglecellexperiment-objects)
-        -   [Example](#example-2)
-    -   [Difference between NEBULA-LN and
-        NEBULA-HL](#difference-between-nebula-ln-and-nebula-hl)
-    -   [Filtering low-expression
-        genes](#filtering-low-expression-genes)
-    -   [Checking convergence for the summary statistics and quality
-        control](#checking-convergence-for-the-summary-statistics-and-quality-control)
-    -   [Using other mixed models](#using-other-mixed-models)
-        -   [Example](#example-3)
-    -   [Special attention paid to testing subject-level
-        variables](#special-attention-paid-to-testing-subject-level-variables)
-        -   [Example](#example-4)
-    -   [Testing contrasts](#testing-contrasts)
-    -   [Extracting marginal and conditional Pearson
-        residuals](#extracting-marginal-and-conditional-pearson-residuals)
-    -   [Parallel computing](#parallel-computing)
-    -   [References](#references)
+- [NEBULA v1.5.7](#nebula-v1.5.7)
+  - [Overview](#overview)
+  - [Installation](#installation)
+    - [Most recent version](#most-recent-version)
+  - [Functions](#functions)
+  - [Basic usage](#basic-usage)
+    - [Example](#example)
+  - [Specifying scaling factors](#specifying-scaling-factors)
+    - [Example](#example-1)
+  - [Using Seurat/SingleCellExperiment
+    Objects](#using-seuratsinglecellexperiment-objects)
+    - [Example](#example-2)
+  - [Difference between NEBULA-LN and
+    NEBULA-HL](#difference-between-nebula-ln-and-nebula-hl)
+  - [Filtering low-expression genes](#filtering-low-expression-genes)
+  - [Checking convergence for the summary statistics and quality
+    control](#checking-convergence-for-the-summary-statistics-and-quality-control)
+  - [Using other mixed models](#using-other-mixed-models)
+    - [Example](#example-3)
+  - [Special attention paid to testing subject-level
+    variables](#special-attention-paid-to-testing-subject-level-variables)
+    - [Example](#example-4)
+  - [Testing contrasts](#testing-contrasts)
+  - [Extracting marginal and conditional Pearson
+    residuals](#extracting-marginal-and-conditional-pearson-residuals)
+  - [Parallel computing](#parallel-computing)
+  - [References](#references)
 
-# NEBULA v1.5.6
+# NEBULA v1.5.7
 
 ## Overview
 
@@ -59,11 +58,26 @@ install_github("lhe17/nebula")
 
 During installation, the *nebula* package may first install the *Rfast*
 package, which requires the presence of GSL in the environment. The
-installation also requires Rcpp-1.0.7 and has been tested on R-4.1.0.
-Starting from version 1.2.0, *nebula* is no longer compatible with R-3.6
-or earlier versions of R. Users who have R-3.6 may install version 1.1.8
-via R-forge (<https://r-forge.r-project.org/R/?group_id=2407>). However,
-it is not recommended to use an older version of *nebula*.
+installation also requires Rcpp-1.0.7 and has been tested on R-4.4.0.
+Starting from version 1.5.7, *nebula* requires R-4.4.0+. Starting from
+version 1.2.0, *nebula* is no longer compatible with R-3.6 or earlier
+versions of R. Users who have R-3.6 may install version 1.1.8 via
+R-forge (<https://r-forge.r-project.org/R/?group_id=2407>). However, it
+is not recommended to use an older version of *nebula*.
+
+For Mac users, the LLVM compiler is needed to compile the source code,
+and it can be installed via e.g., `brew install llvm`. After installing
+the compiler, add the following to the *~/.R/Makevars* file
+
+    CC = /opt/homebrew/opt/llvm/bin/clang
+    CXX = /opt/homebrew/opt/llvm/bin/clang++
+    CPPFLAGS = -I/opt/homebrew/opt/llvm/include
+
+Or Mac users can install the compiled package via CRAN
+
+``` r
+install.packages("nebula")
+```
 
 Please contact <hyx520101@gmail.com> for more information.
 
@@ -71,12 +85,12 @@ Please contact <hyx520101@gmail.com> for more information.
 
 The current version provides the following functions.
 
--   `nebula`: performs an association analysis using NBMMs given a count
-    matrix and subject IDs.
--   `group_cell`: reorders cells to group them by the subject IDs.
--   `nbresidual`: extracts Pearson residuals from the fitted model.
--   `scToNeb`: retrieves data from `Seurat` or `SingleCellExperiment`
-    for calling `nebula`.
+- `nebula`: performs an association analysis using NBMMs given a count
+  matrix and subject IDs.
+- `group_cell`: reorders cells to group them by the subject IDs.
+- `nbresidual`: extracts Pearson residuals from the fitted model.
+- `scToNeb`: retrieves data from `Seurat` or `SingleCellExperiment` for
+  calling `nebula`.
 
 ## Basic usage
 
@@ -118,9 +132,6 @@ should equal the number of cells.
 ``` r
 head(sample_data$sid)
 #> [1] "1" "1" "1" "1" "1" "1"
-```
-
-``` r
 table(sample_data$sid)
 #> 
 #>   1  10  11  12  13  14  15  16  17  18  19   2  20  21  22  23  24  25  26  27 
@@ -145,9 +156,6 @@ head(sample_data$pred)
 #> 4 -0.1717715 0.9759191    case
 #> 5  0.2277492 0.9759191 control
 #> 6 -0.2635516 0.9759191 control
-```
-
-``` r
 df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 head(df)
 #>   (Intercept)         X1        X2 cccontrol
@@ -175,12 +183,10 @@ argument.
 re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-#> Loading required package: foreach
-#> Loading required package: future
-#> Loading required package: rngtools
-```
-
-``` r
+#> Warning: package 'future' was built under R version 4.4.3
+#> Warning: package 'foreach' was built under R version 4.4.3
+#> Warning: package 'doRNG' was built under R version 4.4.3
+#> Warning: package 'rngtools' was built under R version 4.4.3
 re
 #> $summary
 #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)
@@ -198,7 +204,7 @@ re
 #> 1  0.03534659 0.06449424   0.06879634 4.362617e-198 0.6354810 0.1291514
 #> 2  0.03787429 0.06255849   0.07385888 2.052788e-240 0.9436079 0.3896819
 #> 3  0.03696089 0.09238230   0.07258521 6.275230e-121 0.6271261 0.9792875
-#> 4  0.03704556 0.05624824   0.07252600 5.822948e-291 0.8777381 0.6213846
+#> 4  0.03704556 0.05624824   0.07252600 5.822946e-291 0.8777381 0.6213846
 #> 5  0.03750948 0.06101307   0.07331551 7.432319e-227 0.7579977 0.6795995
 #> 6  0.03623477 0.07321208   0.07087566 2.257914e-151 0.7098168 0.8639067
 #> 7  0.03631619 0.06068697   0.07133730 1.872102e-222 0.9225364 0.2151043
@@ -340,22 +346,16 @@ between NEBULA-LN and NEBULA-HL is ~5% for most genes.
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-```
-
-``` r
 re_hl = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='HL',ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-```
-
-``` r
 ## compare the estimated overdispersions
 cbind(re_hl$overdispersion,re_ln$overdispersion)
 #>       Subject      Cell    Subject      Cell
 #> 1  0.08432319 0.9284703 0.08125256 0.8840821
 #> 2  0.07455466 0.9726512 0.07102681 0.9255032
 #> 3  0.17403275 0.9817569 0.17159404 0.9266395
-#> 4  0.05352151 0.8516680 0.05026165 0.8124118
+#> 4  0.05352150 0.8516682 0.05026165 0.8124118
 #> 5  0.07480033 1.3254379 0.07075366 1.2674146
 #> 6  0.12372426 1.1653128 0.12086392 1.1096065
 #> 7  0.07724824 0.9578169 0.07360445 0.9112956
@@ -440,24 +440,24 @@ have a bad convergence code, in many cases, trying a different negative
 binomial mixed model (e.g., NBLMM, see below for more details) or the
 other optimization algorithm may solve the problem.
 
--   Information about the convergence code:
-    -   1: The convergence is reached due to a sufficiently small
-        improvement of the function value.
-    -   -10: The convergence is reached because the gradients are close
-        to zero (i.e., the critical point) and no improvement of the
-        function value can be found.
-    -   (!) -20: The optimization algorithm stops before the convergence
-        because the maximum number of iterations is reached.
-    -   (!) -25: The Hessian matrix is either almost singular or not
-        positive definite.
-    -   (!) -30: The convergence fails because the likelihood function
-        returns NaN.  
-    -   (!) -40: The convergence fails because the critical point is not
-        reached and no improvement of the function value can be found.
-    -   (!) -50: A failure of convergence in the estimation of
-        overdispersions.
-    -   (!) -60: At least one of the estimated overdispersions reaches
-        its upper bound.
+- Information about the convergence code:
+  - 1: The convergence is reached due to a sufficiently small
+    improvement of the function value.
+  - -10: The convergence is reached because the gradients are close to
+    zero (i.e., the critical point) and no improvement of the function
+    value can be found.
+  - (!) -20: The optimization algorithm stops before the convergence
+    because the maximum number of iterations is reached.
+  - (!) -25: The Hessian matrix is either almost singular or not
+    positive definite.
+  - (!) -30: The convergence fails because the likelihood function
+    returns NaN.  
+  - (!) -40: The convergence fails because the critical point is not
+    reached and no improvement of the function value can be found.
+  - (!) -50: A failure of convergence in the estimation of
+    overdispersions.
+  - (!) -60: At least one of the estimated overdispersions reaches its
+    upper bound.
 
 Depending on the concrete application, the estimated gene-specific
 overdispersions can also be taken into consideration in quality control.
@@ -574,9 +574,6 @@ df = model.matrix(~X1+X2+cc, data=sample_data$pred)
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-```
-
-``` r
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[1,])
 cov[upper.tri(cov)] = t(cov)[upper.tri(cov)]
@@ -605,9 +602,6 @@ gene_i = 1
 re_ln = nebula(sample_data$count,sample_data$sid,pred=df,offset=sample_data$offset,method='LN',covariance=TRUE,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-```
-
-``` r
 ## recover the covariance matrix
 cov= matrix(NA,4,4)
 cov[lower.tri(cov,diag=T)] = as.numeric(re_ln$covariance[gene_i,])

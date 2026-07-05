@@ -1272,7 +1272,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
   for(unsigned int i=0;i<nelem;i++)
   {loglik -= Y_c(i)*extbphil(posindy_c(i));}
 
-  loglik = loglik - logw.dot(logw)/alpha/2 - k_c/2*log(alpha);
+  loglik = loglik - logw.dot(logw)/alpha/2 - k_c/2.0*log(alpha);
 
 
   // double eps = 1e-6;
@@ -1366,7 +1366,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
     loglik -= gamma*extbphil.sum();
     for(unsigned int i=0;i<nelem;i++)
     {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-    loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2*log(alpha);
+    loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2.0*log(alpha);
 
     likdif = loglik - loglikp;
     stepd = 0;
@@ -1437,7 +1437,7 @@ Rcpp::List opt_pml_nbm(const Eigen::Map<Eigen::MatrixXd> & X_c, const Eigen::Map
       loglik -= gamma*extbphil.sum();
       for(unsigned int i=0;i<nelem;i++)
       {loglik -= Y_c(i)*extbphil(posindy_c(i));}
-      loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2*log(alpha);
+      loglik = loglik - new_w.dot(new_w)/alpha/2 - k_c/2.0*log(alpha);
 
       likdif = loglik - loglikp;
     }
