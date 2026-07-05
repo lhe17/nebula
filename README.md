@@ -65,6 +65,20 @@ versions of R. Users who have R-3.6 may install version 1.1.8 via
 R-forge (<https://r-forge.r-project.org/R/?group_id=2407>). However, it
 is not recommended to use an older version of *nebula*.
 
+For Mac users, the LLVM compiler is needed to compile the source code,
+and it can be installed via e.g., `brew install llvm`. After installing
+the compiler, add the following to the *~/.R/Makevars* file
+
+    CC = /opt/homebrew/opt/llvm/bin/clang
+    CXX = /opt/homebrew/opt/llvm/bin/clang++
+    CPPFLAGS = -I/opt/homebrew/opt/llvm/include
+
+Or Mac users can install the compiled package via CRAN
+
+``` r
+install.packages("nebula")
+```
+
 Please contact <hyx520101@gmail.com> for more information.
 
 ## Functions
