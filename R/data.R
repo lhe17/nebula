@@ -13,14 +13,3 @@
 #' @docType data
 #' @keywords datasets
 NULL
-
-#' An example Seurat object for testing scToNeb
-#'
-#' @name sample_seurat
-#' @title An example Seurat object for testing scToNeb
-#' @description A Seurat object containing a subset (1000 genes and 1000 cells) of the eight-pancreas scRNA-seq datasets for testing the scToNeb function.
-#' @format A Seurat object
-#' @source \url{https://github.com/satijalab/seurat-data}
-#' @docType data
-#' @keywords datasets
-NULL
