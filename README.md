@@ -309,7 +309,7 @@ pancreatic cells across eight samples.
 
 ``` r
 library(nebula)
-data("sample_seurat")
+sample_seurat <- load_sample_seurat()
 seuratdata <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype","tech"), offset="nCount_RNA")
 ## Make sure that the variables do not contain NA; Otherwise, df would have fewer rows.
 df = model.matrix(~celltype+tech, data=seuratdata$pred)

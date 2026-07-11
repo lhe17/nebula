@@ -17,7 +17,7 @@
 #' library(Seurat)
 #' library(nebula)
 #'
-#' data("sample_seurat")
+#' sample_seurat <- load_sample_seurat()
 #' re <- scToNeb(obj = sample_seurat, assay = "RNA", id = "replicate", pred = c("celltype", "tech"))
 #' }
 

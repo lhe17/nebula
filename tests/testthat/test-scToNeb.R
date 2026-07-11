@@ -45,8 +45,8 @@ test_that("scToNeb rejects unsupported object types", {
 test_that("scToNeb works with Seurat objects", {
   skip_if_not_installed("Seurat")
 
-  # Load the sample data
-  data("sample_seurat", package = "nebula")
+  # Load the sample data using the helper function
+  sample_seurat <- load_sample_seurat()
 
   # Test basic functionality
   result <- scToNeb(obj = sample_seurat, assay = "RNA",
