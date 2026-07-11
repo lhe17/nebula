@@ -79,6 +79,9 @@ covariance: The covariance matrix for the estimated log(FC).
 random_effect: The subject-level random effects.
 }
 \description{
+Performs differential expression analysis using a fast negative binomial mixed model (NEBULA) for multi-subject single-cell data. Includes subject-level random effects to account for hierarchical structure.
+}
+\details{
 Association analysis of a multi-subject single-cell data set using a fast negative binomial mixed model
 }
 \examples{

@@ -25,6 +25,9 @@ residuals: A matrix of Pearson residuals. The number of columns is the number of
 gene: Gene names corresponding to the row names of the count matrix.
 }
 \description{
+Calculates and returns Pearson residuals from NEBULA analysis results. Can compute either marginal or conditional residuals.
+}
+\details{
 Extract Pearson residuals from the results of NEBULA
 }
 \examples{

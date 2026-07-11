@@ -1,5 +1,9 @@
 #' Retrieve data from Seurat or SingleCellExperiment object to prepare for use in nebula
 #'
+#' @name scToNeb
+#' @title Retrieve data from Seurat or SingleCellExperiment object to prepare for use in nebula
+#' @description Extracts count matrix and metadata from Seurat or SingleCellExperiment objects and formats them for use with the nebula function. Handles predictors, sample IDs, and offset factors.
+#'
 #' @param obj \code{Seurat} or \code{SingleCellExperiment} object to create data set for Nebula.
 #' @param assay Assay to retrieve counts from the corresponding \code{Seurat} count matrix.
 #' @param id Sample ID to use metadata object i.e. \code{obj$id}.
@@ -22,6 +26,10 @@ scToNeb <- function(obj, assay = NULL, id = NULL, pred = NULL, offset = NULL, ve
 {
   p_df <- list()
   if ("SingleCellExperiment" %in% class(obj)) {
+    if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
+      stop("Package 'SingleCellExperiment' is required for SingleCellExperiment objects. ",
+           "Please install it using: install.packages('BiocManager'); BiocManager::install('SingleCellExperiment')")
+    }
     covs = colnames(SingleCellExperiment::colData(obj))
     count <- SingleCellExperiment::counts(obj)
     for (k in pred){
@@ -47,6 +55,10 @@ scToNeb <- function(obj, assay = NULL, id = NULL, pred = NULL, offset = NULL, ve
       }
     }
   } else if ("Seurat" %in% class(obj)) {
+    if (!requireNamespace("Seurat", quietly = TRUE)) {
+      stop("Package 'Seurat' is required for Seurat objects. ",
+           "Please install it using: install.packages('Seurat')")
+    }
     if (is.null(assay)) {
       assay <- Seurat::DefaultAssay(obj)
       if (verbose)
@@ -64,8 +76,16 @@ scToNeb <- function(obj, assay = NULL, id = NULL, pred = NULL, offset = NULL, ve
       }
     }
     p_df <- data.frame(p_df, row.names = colnames(obj))
+    # Get count matrix - compatible with both Seurat v4 and v5
+    # In Seurat v5, 'slot' was replaced with 'layer'
+    count_data <- tryCatch({
+      Seurat::GetAssayData(obj, layer = "counts")
+    }, error = function(e) {
+      # Fallback for Seurat v4
+      Seurat::GetAssayData(obj, slot = "counts")
+    })
     data_neb <- list(
-      count = Seurat::GetAssayData(obj, slot = "counts"),
+      count = count_data,
       pred = p_df
     )
     if (!is.null(id)) {

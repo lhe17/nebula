@@ -25,6 +25,9 @@ pred: A reordered design matrix of the predictors.
 offset: A reordered vector of the scaling factor.
 }
 \description{
+Reorders the count matrix, subject IDs, predictors, and offset factors so that cells are grouped by subject ID. If cells are already grouped, returns NULL.
+}
+\details{
 Group cells according to subject IDs
 }
 \examples{

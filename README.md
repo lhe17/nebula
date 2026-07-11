@@ -1,4 +1,4 @@
-- [NEBULA v1.5.7](#nebula-v1.5.7)
+- [NEBULA v1.5.8](#nebula-v1.5.8)
   - [Overview](#overview)
   - [Installation](#installation)
     - [Most recent version](#most-recent-version)
@@ -26,7 +26,7 @@
   - [Parallel computing](#parallel-computing)
   - [References](#references)
 
-# NEBULA v1.5.7
+# NEBULA v1.5.8
 
 ## Overview
 

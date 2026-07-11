@@ -1,5 +1,9 @@
 #' Extract Pearson residuals from the results of NEBULA
 #'
+#' @name nbresidual
+#' @title Extract Pearson residuals from the results of NEBULA
+#' @description Calculates and returns Pearson residuals from NEBULA analysis results. Can compute either marginal or conditional residuals.
+#'
 #' @param nebula An object of the result obtained from running the function nebula.
 #' @param count A raw count matrix of the single-cell data. The rows are the genes, and the columns are the cells. The matrix can be a matrix object or a sparse dgCMatrix object.
 #' @param id A vector of subject IDs. The length should be the same as the number of columns of the count matrix.
