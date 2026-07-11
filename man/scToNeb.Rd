@@ -30,6 +30,9 @@ scToNeb(
 data_neb: A list usable for nebula.
 }
 \description{
+Extracts count matrix and metadata from Seurat or SingleCellExperiment objects and formats them for use with the nebula function. Handles predictors, sample IDs, and offset factors.
+}
+\details{
 Retrieve data from Seurat or SingleCellExperiment object to prepare for use in nebula
 }
 \examples{

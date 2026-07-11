@@ -13,10 +13,10 @@ A list of four objects:
   \item{offset}{A vector of scaling factors}
 }
 }
-\usage{
-sample_data
-}
 \description{
 A dataset containing a count matrix, subject IDs, a data frame of predictors and scaling factors.
+}
+\details{
+An example data set for testing nebula
 }
 \keyword{datasets}
