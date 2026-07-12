@@ -176,7 +176,7 @@ test_that("scToNeb handles Seurat object with sparse matrix", {
 test_that("scToNeb handles offset parameter with Seurat", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test with offset
   result <- scToNeb(obj = sample_seurat, assay = "RNA",
@@ -190,7 +190,7 @@ test_that("scToNeb handles offset parameter with Seurat", {
 test_that("scToNeb handles missing predictor variable gracefully", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test with a non-existent predictor
   expect_error(
@@ -203,7 +203,7 @@ test_that("scToNeb handles missing predictor variable gracefully", {
 test_that("scToNeb handles missing id variable gracefully", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test with a non-existent id
   expect_error(
@@ -216,7 +216,7 @@ test_that("scToNeb handles missing id variable gracefully", {
 test_that("scToNeb handles missing offset variable gracefully", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test with a non-existent offset
   expect_error(
@@ -230,7 +230,7 @@ test_that("scToNeb handles missing offset variable gracefully", {
 test_that("scToNeb warns when no sample ID is provided", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test warning when id is NULL
   expect_warning(
@@ -243,7 +243,7 @@ test_that("scToNeb warns when no sample ID is provided", {
 test_that("scToNeb uses default assay when none specified", {
   skip_if_not_installed("Seurat")
 
-  data("sample_seurat", package = "nebula")
+  sample_seurat <- load_sample_seurat()
 
   # Test with verbose=FALSE to suppress the default assay message
   result <- scToNeb(obj = sample_seurat, id = "replicate", pred = "celltype", verbose = FALSE)
