@@ -1,4 +1,4 @@
-- [NEBULA v1.5.8](#nebula-v1.5.8)
+- [NEBULA v1.5.9](#nebula-v1.5.9)
   - [Overview](#overview)
   - [Installation](#installation)
     - [Most recent version](#most-recent-version)
@@ -26,7 +26,7 @@
   - [Parallel computing](#parallel-computing)
   - [References](#references)
 
-# NEBULA v1.5.8
+# NEBULA v1.5.9
 
 ## Overview
 
@@ -183,10 +183,7 @@ argument.
 re = nebula(sample_data$count,sample_data$sid,pred=df,ncore=1)
 #> Remove  0  genes having low expression.
 #> Analyzing  10  genes with  30  subjects and  6176  cells.
-#> Warning: package 'future' was built under R version 4.4.3
-#> Warning: package 'foreach' was built under R version 4.4.3
-#> Warning: package 'doRNG' was built under R version 4.4.3
-#> Warning: package 'rngtools' was built under R version 4.4.3
+#> Warning: package 'future' was built under R version 4.6.2
 re
 #> $summary
 #>    logFC_(Intercept)     logFC_X1     logFC_X2 logFC_cccontrol se_(Intercept)

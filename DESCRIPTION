@@ -1,8 +1,8 @@
 Package: nebula
 Type: Package
 Title: Negative Binomial Mixed Models Using Large-Sample Approximation for Differential Expression Analysis of ScRNA-Seq Data
-Version: 1.5.8
-Date: 2026-07-10
+Version: 1.5.9
+Date: 2026-11-07
 Authors@R: c(
     person("Liang", "He", email = "hyx520101@gmail.com", role = c("aut", "cre")),
     person("Raghav", "Sharma", email = "raghavv.sharma@mail.utoronto.ca", role = "ctb"))
@@ -19,4 +19,4 @@ BugReports: https://github.com/lhe17/nebula/issues
 Suggests: knitr, utils,
     rmarkdown, Seurat, SingleCellExperiment, testthat
 VignetteBuilder: knitr
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.1
